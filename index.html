@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="root">
+
+    </div>
+</body>
+<script>
+    const ele0 = document.querySelector("#root");
+    setTimeout(_=>{
+        const ele1 = document.createElement("div");
+        ele1.id = "xy_app_content";
+        ele0.appendChild(ele1);
+
+        setTimeout(_ => {
+            setTimeout(_ => {
+            }, 1000)
+        }, 1000)
+    }, 1000)
+</script>
+<script src="./LET ME DOWNload it!.user.js"></script>
+</html>
