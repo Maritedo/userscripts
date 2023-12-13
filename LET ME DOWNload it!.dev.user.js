@@ -1,12 +1,16 @@
 // ==UserScript==
 // @name         LET ME DOWNload it! DEV
-// @namespace    https://scripts.justtryit.top/
+// @namespace    https://userjs.justtryit.top/
 // @version      0.1.0
 // @description
 // @author       blairollie63@gmail.com
 // @match        https://*.ai-augmented.com/*
 // @grant        window.onurlchange
 // @run-at       document-body
+// @updateURL    https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
+// @downloadURL  https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
+// @installURL   https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
+// @supportURL   https://userjs.justtryit.top/
 // ==/UserScript==
 
 (function () {
