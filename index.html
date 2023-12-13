@@ -1,27 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
-    <div id="root">
 
-    </div>
+<body>
+    <a href="/LET ME DOWNload it!.min.user.js">LET ME DOWNload it!.min.user.js</a>
 </body>
 <script>
+    const delay = 100;
     const ele0 = document.querySelector("#root");
-    setTimeout(_=>{
+    setTimeout(_ => {
         const ele1 = document.createElement("div");
         ele1.id = "xy_app_content";
         ele0.appendChild(ele1);
-
         setTimeout(_ => {
+            const ele2 = document.createElement("div");
+            ele2.classList.add("ta_panel", "ta_panel_group", "ta_group");
+            ele1.appendChild(ele2);
             setTimeout(_ => {
-            }, 1000)
-        }, 1000)
-    }, 1000)
+                const ele3 = document.createElement("a");
+                ele2.append(ele3);
+            }, delay)
+        }, delay)
+    }, delay)
 </script>
 <script src="./LET ME DOWNload it!.user.js"></script>
+
 </html>
