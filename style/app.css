@@ -53,15 +53,12 @@ html,
 }
 
 .wrapper::-webkit-scrollbar-track {
-    width: 4px;
     margin-top: calc(4px + var(--header-height));
     margin-bottom: 4px;
-    padding: 4px;
 }
 
 .wrapper::-webkit-scrollbar-thumb {
     width: 4px;
-
     background-color: #666f;
     border-radius: calc(4px);
 }
@@ -86,6 +83,9 @@ html,
     color: var(--theme);
     text-align: center;
     text-decoration: none;
+    outline: none;
+    position: relative;
+    z-index: 0;
 }
 
 .navigator .filler {
@@ -108,11 +108,14 @@ html,
     height: 100%;
 }
 
+.navigator {
+    --w: 1%;
+    --h: 18%;
+}
+
 .navigator .indicator .box::after {
     content: "";
     position: absolute;
-    --w: 0%;
-    --h: 18%;
     left: var(--w);
     top: var(--h);
     width: calc(100% - 2 * var(--w));
@@ -143,4 +146,25 @@ html,
 
 .hidden {
     display: none;
+}
+
+.route:not(.selected):focus {
+    font-size: larger !important;
+}
+
+.route::before {
+    content: "";
+    transition: background-color calc(var(--animation-duration) / 2) var(--animation-timingfn);
+    position: absolute;
+    z-index: -1;
+    left: var(--w);
+    top: var(--h);
+    width: calc(100% - 2 * var(--w));
+    height: calc(100% - 2 * var(--h));
+    border-radius: 8px;
+    background-color: #0000;
+}
+
+.route:not(.selected):focus::before {
+    background-color: var(--secondary);
 }

@@ -1,4 +1,9 @@
 const routes = ["home", "about", "help"];
+const mapper = new Map([
+    ["home", "主页"],
+    ["about", "关于"],
+    ["help", "帮助"]
+]);
 function select_tab(id) {
     document.querySelectorAll(".route").forEach(item => item.classList.remove('selected'));
     document.querySelectorAll(".route[to='" + id + "']").forEach(item => item.classList.add('selected'));
@@ -21,7 +26,7 @@ function push(event) {
 
 function _push_(id) {
     select_tab(id);
-    document.title = id;
+    document.title = "UserJS - " + (mapper.get(id) || "Unknown");
     load_content(id);
     window.history.pushState({ id }, `${id}`, `#${id}`);
 }
@@ -31,12 +36,13 @@ window.onload = () => {
         event.preventDefault();
         if (event.target.tagName == "A") _push_(event.target.getAttribute("to"))
     })
-    if (window.location.hash !== "") _push_(window.location.hash.slice(1));
+    if (window.location.hash !== "" && routes.includes(window.location.hash.slice(1))) _push_(window.location.hash.slice(1));
     else _push_("home")
 }
 
 window.addEventListener("popstate", event => {
     let stateId = event.currentTarget.location.hash.slice(1);
+    stateId = routes.includes(stateId) ? stateId : "home";
     select_tab(stateId);
     load_content(stateId);
     _push_(stateId)
@@ -48,6 +54,8 @@ class cardAnimater {
     currentRotateY = 0;
     currentShadowX = 0;
     currentShadowY = 0;
+    currentDeg = 0;
+    currentOpacity = 0;
     card;
 
     constructor(ele) {
@@ -55,66 +63,107 @@ class cardAnimater {
     }
 
     init() {
+        this.card.addEventListener("mouseenter", event => this.handleMouseEnter(event));
         this.card.addEventListener("mousemove", event => this.handleMouseMove(event));
         this.card.addEventListener("mouseleave", event => this.handleMouseLeave(event));
-        this.animateRotation(0, 0, 0, 0, this.card);
+        this.animateRotation(0, 0, 0, 0, 0, 0);
         return this;
+    }
+
+    handleMouseEnter(event) {
+        cancelAnimationFrame(this.animationFrameId);
+
     }
 
     handleMouseMove(event) {
         cancelAnimationFrame(this.animationFrameId);
 
-        if (this.card) {
-            const boundingRect = this.card.getBoundingClientRect();
-            const offsetX = boundingRect.width / 2 - (event.clientX - boundingRect.left);
-            const offsetY = boundingRect.height / 2 - (event.clientY - boundingRect.top);
+        const rotateRange = 12;
+        const shadowRange = 50;
 
-            const targetRotateX = - offsetY / 12;
-            const targetRotateY = offsetX / 12;
+        const boundingRect = this.card.getBoundingClientRect();
+        const offsetX = boundingRect.width / 2 - (event.clientX - boundingRect.left);
+        const offsetY = boundingRect.height / 2 - (event.clientY - boundingRect.top);
 
-            const targetShadowX = (offsetX / boundingRect.width) * 30; // 调整阴影水平位置
-            const targetShadowY = (offsetY / boundingRect.height) * 30; // 调整阴影垂直位置
+        const percentX = (offsetX * 2 / boundingRect.width);
+        const percentY = (offsetY * 2 / boundingRect.height);
 
-            this.animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY);
+        const targetRotateX = - percentX * rotateRange;
+        const targetRotateY = percentY * rotateRange;
+
+        const targetShadowX = (offsetX / boundingRect.width) * shadowRange;
+        const targetShadowY = (offsetY / boundingRect.height) * shadowRange;
+
+        let deg;
+        if (percentX == 0) {
+            deg = percentY > 0 ? 0 : 180;
+        } else {
+            deg = Math.atan(percentY / percentX) * 180 / Math.PI + ((percentX > 0) ? 90 : 270);
         }
+        const opacity = Math.sqrt(percentX ** 2 + percentY ** 2);
+        this.animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY, opacity, deg);
+
     }
 
-    animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY) {
+    handleMouseLeave(event) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animateRotation(0, 0, 0, 0, 0, this.currentDeg);
+    }
+
+    animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY, targetOpacity, targetDeg) {
         const easeFactor = 0.05;
 
-        function animate(card_animater) {
+        function setStyle(card_animater, crx, cry, csx, csy, opacity, deg) {
+            card_animater.card.style.transform = `rotateX(${crx}deg) rotateY(${cry}deg)`;
+            card_animater.card.style.boxShadow = `${csx}px ${csy}px 20px -10px rgba(0, 0, 0, 0.6)`;
+            card_animater.card.style.setProperty("--deg", deg % 360 + "deg");
+            card_animater.card.style.setProperty("--opacity", opacity / 4);
+        }
+
+        (function animate(card_animater) {
+            // 处理角度跃进
+            var _deltaDeg = targetDeg - card_animater.currentDeg;
+            if (Math.abs(_deltaDeg) > 180) {
+                if (targetDeg > 180) {
+                    card_animater.currentDeg += 360;
+                } else {
+                    card_animater.currentDeg -= 360;
+                }
+            }
+
             const deltaRotateX = (targetRotateX - card_animater.currentRotateX) * easeFactor;
             const deltaRotateY = (targetRotateY - card_animater.currentRotateY) * easeFactor;
             const deltaShadowX = (targetShadowX - card_animater.currentShadowX) * easeFactor;
             const deltaShadowY = (targetShadowY - card_animater.currentShadowY) * easeFactor;
+            const deltaOpacity = (targetOpacity - card_animater.currentOpacity) * easeFactor;
+            const deltaDeg = (targetDeg - card_animater.currentDeg) * easeFactor;
 
             card_animater.currentRotateX += deltaRotateX;
             card_animater.currentRotateY += deltaRotateY;
             card_animater.currentShadowX += deltaShadowX;
             card_animater.currentShadowY += deltaShadowY;
+            card_animater.currentOpacity += deltaOpacity;
+            card_animater.currentDeg += deltaDeg;
 
-            card_animater.card.style.transform = `rotateX(${card_animater.currentRotateX}deg) rotateY(${card_animater.currentRotateY}deg)`;
+            setStyle(card_animater,
+                card_animater.currentRotateX,
+                card_animater.currentRotateY,
+                card_animater.currentShadowX,
+                card_animater.currentShadowY,
+                card_animater.currentOpacity,
+                card_animater.currentDeg);
 
-            card_animater.card.style.boxShadow = `${card_animater.currentShadowX}px ${card_animater.currentShadowY}px 20px -10px rgba(0, 0, 0, 0.6)`;
-
-            //, inset ${card_animater.currentShadowX / 4}px ${card_animater.currentShadowY / 4}px 8px -4px rgba(0, 0, 0, 0.6)
-
-            if (Math.abs(Math.min(card_animater.currentRotateX, card_animater.currentRotateY, card_animater.currentShadowX, card_animater.currentShadowY)) > 0.1) {
+            if (Math.abs(Math.min(deltaRotateX, deltaRotateY, deltaShadowX, deltaShadowY)) > 0.1 * easeFactor)
                 card_animater.animationFrameId = requestAnimationFrame(() => animate(card_animater));
-            } else {
-
-            }
-        }
-
-        animate(this);
-    }
-
-    handleMouseLeave(event) {
-        cancelAnimationFrame(this.animationFrameId);
-
-        if (this.card) {
-            this.animateRotation(0, 0, 0, 0, this.card);
-        }
+            else
+                setStyle(card_animater,
+                    targetRotateX,
+                    targetRotateY,
+                    targetShadowX,
+                    targetShadowY,
+                    targetOpacity,
+                    targetDeg)
+        })(this);
     }
 }
 

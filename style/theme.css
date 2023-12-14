@@ -23,7 +23,10 @@
 }
 
 :root {
-    --animation: all .3s ease;
+    --animation-property: all;
+    --animation-duration: .3s;
+    --animation-timingfn: ease;
+    --animation: var(--animation-property) var(--animation-duration) var(--animation-timingfn);
     --header-height: 64px;
     --outline: 0.5px solid var(--theme);
 }
