@@ -4,71 +4,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>UserJS</title>
+    <link rel="stylesheet" href="/style/index.css">
 </head>
 
 <body>
     <div class="wrapper">
         <header class="header">
             <nav class="navigator">
-                <ul class="nav-menu">
-                    <li class="filler"></li>
-                    <li>HOME</li>
-                    <li>INSTRUCTION</li>
-                    <li>INTRO</li>
-                    <li class="filler"></li>
-                </ul>
+                <div class="indicator" style="--sum: 5; --before: 1;">
+                    <div class="box"></div>
+                </div>
+                <span class="filler"></span>
+                <a class="route" to="home">主页</a>
+                <a class="route" to="about">关于</a>
+                <a class="route" to="help">帮助</a>
+                <span class="filler"></span>
             </nav>
         </header>
-        <section class="content">
-            <a class="link" href="/LET ME DOWNload it!.min.user.js">LET ME DOWNload it.js</a>
+        <div class="none"></div>
+        <section id="content" class="content">
+            <div class="content-wrapper">
+                <div class="page" id="page_home" style="height: 1000px;">
+                    <div class="card-container">
+                        <div class="card">
+                            <img src="https://placekitten.com/250/153" alt="Cat Image">
+                            <div class="card-content">
+                                <p class="card-title">
+                                    LET ME DOWNload
+                                    it.js
+                                </p>
+                                <p class="card-info">
+                                    解除小雅资源下载限制。
+                                </p>
+                            </div>
+                            <a class="link" href="/LET ME DOWNload it!.min.user.js">安装</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </div>
 </body>
-
-<script>
-</script>
-
-<style>
-    html,
-    body,
-    .wrapper,
-    .header,
-    .navigator,
-    .nav-menu {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    .wrapper {
-        width: 100%;
-        height: 100%;
-    }
-
-    .header {
-        position: sticky;
-        position: -webkit-sticky;
-        background-color: aqua;
-    }
-
-    .navigator {}
-
-    .nav-menu {
-        list-style: none;
-        display: flex;
-        height: 48px;
-
-        li {
-            display: inline-block;
-            flex: 1;
-            height: 48px;
-            line-height: 48px;
-            text-align: center;
-        }
-    }
-
-    .content {}
-</style>
+<script src="script/main.js"></script>
 
 </html>

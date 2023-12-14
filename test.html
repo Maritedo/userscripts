@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .card {
+            width: 250px;
+            height: 300px;
+            /* Set height to ensure consistent aspect ratio */
+            margin: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            perspective: 1000px;
+            transform-origin: center center;
+        }
+
+        .card img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .card-content {
+            padding: 16px;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            position: relative;
+            transform: translateZ(100px);
+            /* Adjust this value based on your preference */
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+    </style>
+    <title>Enhanced Tilted Card Layout</title>
+</head>
+
+<body>
+
+    <div class="card-container">
+        <div class="card">
+            <img src="https://placekitten.com/250/150" alt="Cat Image">
+            <div class="card-content">
+                <h3>Card 1</h3>
+                <p>Some content here...</p>
+            </div>
+        </div>
+        <div class="card">
+            <img src="https://placekitten.com/250/151" alt="Cat Image">
+            <div class="card-content">
+                <h3>Card 1</h3>
+                <p>Some content here...</p>
+            </div>
+        </div>
+        <div class="card">
+            <img src="https://placekitten.com/250/152" alt="Cat Image">
+            <div class="card-content">
+                <h3>Card 1</h3>
+                <p>Some content here...</p>
+            </div>
+        </div>
+        <div class="card">
+            <img src="https://placekitten.com/250/153" alt="Cat Image">
+            <div class="card-content">
+                <h3>Card 1</h3>
+                <p>Some content here...</p>
+            </div>
+        </div>
+
+        <!-- Add more cards as needed -->
+
+    </div>
+
+    <script>
+        class cardAnimater {
+            animationFrameId;
+            currentRotateX = 0;
+            currentRotateY = 0;
+            currentShadowX = 0;
+            currentShadowY = 0;
+            card;
+
+            constructor(ele) {
+                this.card = ele;
+            }
+
+            init() {
+                this.card.addEventListener("mousemove", event => this.handleMouseMove(event));
+                this.card.addEventListener("mouseleave", event => this.handleMouseLeave(event));
+                this.animateRotation(0, 0, 0, 0, this.card);
+                return this;
+            }
+
+            handleMouseMove(event) {
+                cancelAnimationFrame(this.animationFrameId);
+
+                if (this.card) {
+                    const boundingRect = this.card.getBoundingClientRect();
+                    const offsetX = boundingRect.width / 2 - (event.clientX - boundingRect.left);
+                    const offsetY = boundingRect.height / 2 - (event.clientY - boundingRect.top);
+
+                    const targetRotateX = - offsetY / 8;
+                    const targetRotateY = offsetX / 8;
+
+                    const targetShadowX = (offsetX / boundingRect.width) * 40; // 调整阴影水平位置
+                    const targetShadowY = (offsetY / boundingRect.height) * 40; // 调整阴影垂直位置
+
+                    this.animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY);
+                }
+            }
+
+            animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY) {
+                const easeFactor = 0.05;
+
+                function animate(card_animater) {
+                    const deltaRotateX = (targetRotateX - card_animater.currentRotateX) * easeFactor;
+                    const deltaRotateY = (targetRotateY - card_animater.currentRotateY) * easeFactor;
+                    const deltaShadowX = (targetShadowX - card_animater.currentShadowX) * easeFactor;
+                    const deltaShadowY = (targetShadowY - card_animater.currentShadowY) * easeFactor;
+
+                    card_animater.currentRotateX += deltaRotateX;
+                    card_animater.currentRotateY += deltaRotateY;
+                    card_animater.currentShadowX += deltaShadowX;
+                    card_animater.currentShadowY += deltaShadowY;
+
+                    card_animater.card.style.transform = `rotateX(${card_animater.currentRotateX}deg) rotateY(${card_animater.currentRotateY}deg)`;
+
+                    card_animater.card.style.boxShadow = `${card_animater.currentShadowX}px ${card_animater.currentShadowY}px 20px -10px rgba(0, 0, 0, 0.6)`;
+
+                    if (Math.abs(Math.min(card_animater.currentRotateX, card_animater.currentRotateY, card_animater.currentShadowX, card_animater.currentShadowY)) > 0.1) {
+                        card_animater.animationFrameId = requestAnimationFrame(() => animate(card_animater));
+                    } else {
+
+                    }
+                }
+
+                animate(this);
+            }
+
+            handleMouseLeave(event) {
+                cancelAnimationFrame(this.animationFrameId);
+
+                if (this.card) {
+                    this.animateRotation(0, 0, 0, 0, this.card);
+                }
+            }
+        }
+
+        const animaters = [];
+        document.querySelectorAll(".card").forEach(element => {
+            animaters.push((new cardAnimater(element)).init());
+        });
+        console.log(animaters)
+    </script>
+
+</body>
+
+</html>

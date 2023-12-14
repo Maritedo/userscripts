@@ -4,9 +4,8 @@
 // @version      0.1.0
 // @description
 // @author       blairollie63@gmail.com
-// @match        https://*.ai-augmented.com/*
-// @grant        window.onurlchange
-// @run-at       document-body
+// @match        *://*.ai-augmented.com/*
+// @run-at       document-start
 // @updateURL    https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
 // @downloadURL  https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
 // @installURL   https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
@@ -17,24 +16,30 @@
     'use strict';
 
     const useDebug = true;
+    const console_log = console.log;
+    // const console_info = console.info;
+    // const console_warn = console.warn;
+    // const console_error = console.log;
+    console.log = _ => null;
+    console.info = _ => null;
+    console.warn = _ => null;
+    console.error = _ => null;
     function log(...objs) {
         if (!useDebug) return;
-        // const error = new Error();
-        // const callerLine = error.stack.split('\n')[2].trim().split(':');
-        // const len = callerLine.length - 2;
-        console.log(`[LMDI]`, ...objs);
+        const error = new Error();
+        const callerLine = error.stack.split('\n')[2].trim().split(':');
+        const len = callerLine.length - 2;
+        console_log(`[LMDI:${callerLine[len]}]`, ...objs);
     }
 
     let name = "", href = "";
-    let iframe, title, exits = false;
+    let exits = false;
     let label, anchor;
     let setAnchorAttr;
-    let listener;
     let color = {
         def: "#ffad1698",
         blk: "#3339"
     };
-    let observer, observed_ele;
 
     log("插件已运行");
 
@@ -98,8 +103,13 @@
             "body", () => {
                 log("页面载入完成");
                 if (check(window, "unsafeWindow", "$history", "listen")) {
-                    log("成功在路由中注入监听器");
+                    log("成功在unsafeWindow对象的路由中注入监听器");
                     window.unsafeWindow.$history.listen((location, action) => {
+                        init();
+                    });
+                } else if (check(window, "$history", "listen")) {
+                    log("成功在window对象的路由中注入监听器");
+                    window.$history.listen((location, action) => {
                         init();
                     });
                 } else {
@@ -128,7 +138,7 @@
         let finalCallback;
 
         function observeNext(father, selector, callback) {
-            log("observing", selector, "on", father);
+            log("observing", selector);
             const promise = new Promise(resolve => {
                 const f = (ele) => {
                     resolve();
@@ -141,12 +151,11 @@
                 };
                 let ele;
                 if ((ele = father.querySelector(selector)) !== null) {
-                    log("DIRECT find", selector, "inside", father);
+                    log("DIRECT find", selector);
                     f(ele)
                 }
                 else {
-                    log("SPYING element", selector, "inside", father);
-                    log("Previous attempt failure", ele);
+                    log("SPYING element", selector);
                     (ele = new MutationObserver(mutations => {
                         mutations.find(mutation => {
                             return Array.from(mutation.addedNodes).find(node => {

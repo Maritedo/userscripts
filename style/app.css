@@ -1,0 +1,146 @@
+html,
+body,
+.wrapper,
+.header,
+.navigator {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    min-width: 400px;
+}
+
+body,
+html,
+.wrapper {
+    width: 100%;
+    height: 100%;
+    background-color: var(--primary);
+}
+
+.wrapper {
+    overflow-x: auto;
+}
+
+.header {
+    z-index: 2;
+    position: fixed;
+    height: var(--header-height);
+    width: 100%;
+    background-color: var(--secondary);
+    box-shadow: var(--shadow-1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.content {
+    z-index: 1;
+    box-sizing: border-box;
+    height: fit-content;
+    min-height: calc(100% - var(--header-height));
+    background-color: var(--primary);
+    overflow-y: visible;
+}
+
+.none {
+    background-color: var(--primary);
+    height: var(--header-height);
+}
+
+
+.wrapper::-webkit-scrollbar {
+    width: 8px;
+    background-color: var(--primary);
+}
+
+.wrapper::-webkit-scrollbar-track {
+    width: 4px;
+    margin-top: calc(4px + var(--header-height));
+    margin-bottom: 4px;
+    padding: 4px;
+}
+
+.wrapper::-webkit-scrollbar-thumb {
+    width: 4px;
+
+    background-color: #666f;
+    border-radius: calc(4px);
+}
+
+.navigator {
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: row;
+    height: 100%;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.route {
+    display: inline-block;
+    cursor: pointer;
+    -webkit-user-drag: none;
+    flex: 1;
+    height: 100%;
+    line-height: var(--header-height);
+    color: var(--theme);
+    text-align: center;
+    text-decoration: none;
+}
+
+.navigator .filler {
+    flex: 1;
+}
+
+.navigator .indicator {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+    display: flex;
+    display: -webkit-flex;
+}
+
+.navigator .indicator .box {
+    flex: 1;
+    transition: var(--animation);
+    position: relative;
+    height: 100%;
+}
+
+.navigator .indicator .box::after {
+    content: "";
+    position: absolute;
+    --w: 0%;
+    --h: 18%;
+    left: var(--w);
+    top: var(--h);
+    width: calc(100% - 2 * var(--w));
+    height: calc(100% - 2 * var(--h));
+    background-color: var(--theme);
+    border-radius: 8px;
+    box-shadow: 0 5px 16px -8px rgba(0, 0, 0, .2), 0 -5px 16px -8px rgba(0, 0, 0, .2);
+}
+
+.navigator .indicator::before {
+    content: "";
+    transition: var(--animation);
+    height: 100%;
+    flex: var(--before);
+}
+
+.navigator .indicator::after {
+    content: "";
+    transition: var(--animation);
+    height: 100%;
+    flex: calc(var(--sum) - var(--before) - 1);
+}
+
+.selected {
+    font-size: 1.25em;
+    color: var(--color-reverse);
+}
+
+.hidden {
+    display: none;
+}
