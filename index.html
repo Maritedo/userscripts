@@ -8,26 +8,67 @@
 </head>
 
 <body>
-    <a href="/LET ME DOWNload it!.min.user.js">LET ME DOWNload it!.min.user.js</a>
+    <div class="wrapper">
+        <header class="header">
+            <nav class="navigator">
+                <ul class="nav-menu">
+                    <li class="filler"></li>
+                    <li>HOME</li>
+                    <li>INSTRUCTION</li>
+                    <li>INTRO</li>
+                    <li class="filler"></li>
+                </ul>
+            </nav>
+        </header>
+        <section class="content">
+            <a class="link" href="/LET ME DOWNload it!.min.user.js">LET ME DOWNload it.js</a>
+        </section>
+    </div>
 </body>
+
 <script>
-    const delay = 100;
-    const ele0 = document.querySelector("#root");
-    setTimeout(_ => {
-        const ele1 = document.createElement("div");
-        ele1.id = "xy_app_content";
-        ele0.appendChild(ele1);
-        setTimeout(_ => {
-            const ele2 = document.createElement("div");
-            ele2.classList.add("ta_panel", "ta_panel_group", "ta_group");
-            ele1.appendChild(ele2);
-            setTimeout(_ => {
-                const ele3 = document.createElement("a");
-                ele2.append(ele3);
-            }, delay)
-        }, delay)
-    }, delay)
 </script>
-<script src="./LET ME DOWNload it!.user.js"></script>
+
+<style>
+    html,
+    body,
+    .wrapper,
+    .header,
+    .navigator,
+    .nav-menu {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .wrapper {
+        width: 100%;
+        height: 100%;
+    }
+
+    .header {
+        position: sticky;
+        position: -webkit-sticky;
+        background-color: aqua;
+    }
+
+    .navigator {}
+
+    .nav-menu {
+        list-style: none;
+        display: flex;
+        height: 48px;
+
+        li {
+            display: inline-block;
+            flex: 1;
+            height: 48px;
+            line-height: 48px;
+            text-align: center;
+        }
+    }
+
+    .content {}
+</style>
 
 </html>

@@ -17,17 +17,12 @@
     'use strict';
 
     const useDebug = true;
-    const console_log = window.console.log;
-    window.console.log = () => null;
-    window.console.info = () => null;
-    window.console.warn = () => null;
-    window.console.error = () => null;
     function log(...objs) {
         if (!useDebug) return;
         // const error = new Error();
         // const callerLine = error.stack.split('\n')[2].trim().split(':');
         // const len = callerLine.length - 2;
-        console_log(`[LMDI]`, ...objs);
+        console.log(`[LMDI]`, ...objs);
     }
 
     let name = "", href = "";
