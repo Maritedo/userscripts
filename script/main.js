@@ -78,7 +78,7 @@ class cardAnimater {
     handleMouseMove(event) {
         cancelAnimationFrame(this.animationFrameId);
 
-        const rotateRange = 12;
+        const rotateRange = 6;
         const shadowRange = 50;
 
         const boundingRect = this.card.getBoundingClientRect();
@@ -116,34 +116,39 @@ class cardAnimater {
         function setStyle(card_animater, crx, cry, csx, csy, opacity, deg) {
             card_animater.card.style.transform = `rotateX(${crx}deg) rotateY(${cry}deg)`;
             card_animater.card.style.boxShadow = `${csx}px ${csy}px 20px -10px rgba(0, 0, 0, 0.6)`;
-            card_animater.card.style.setProperty("--deg", deg % 360 + "deg");
+            card_animater.card.style.setProperty("--deg", deg + "deg");
             card_animater.card.style.setProperty("--opacity", opacity / 4);
         }
 
         (function animate(card_animater) {
-            // 处理角度跃进
-            var _deltaDeg = targetDeg - card_animater.currentDeg;
-            if (Math.abs(_deltaDeg) > 180) {
-                if (targetDeg > 180) {
-                    card_animater.currentDeg += 360;
-                } else {
-                    card_animater.currentDeg -= 360;
-                }
-            }
+            // 处理角度抖动
+            // var _deltaDeg = 360 - (Math.abs(targetDeg - 180) + Math.abs(card_animater.currentDeg - 180));
+            // if (Math.min(card_animater.currentDeg, targetDeg) > 0 && Math.max(card_animater.currentDeg, targetDeg) < 360 && _deltaDeg < 45) {
+            //     if (targetDeg > 337.5) {
+            //         card_animater.currentDeg += 360;
+            //     } else if (targetDeg < 22.5) {
+            //         card_animater.currentDeg -= 360;
+            //     }
+            // }
+            // console.log(~~card_animater.currentDeg, ~~targetDeg)
+            const delta = Math.abs(targetDeg - card_animater.currentDeg);
+            const path1 = targetDeg - card_animater.currentDeg;
+            const path2 = (targetDeg - card_animater.currentDeg) > 0 ? (delta - 360) : (360 - delta);
 
             const deltaRotateX = (targetRotateX - card_animater.currentRotateX) * easeFactor;
             const deltaRotateY = (targetRotateY - card_animater.currentRotateY) * easeFactor;
             const deltaShadowX = (targetShadowX - card_animater.currentShadowX) * easeFactor;
             const deltaShadowY = (targetShadowY - card_animater.currentShadowY) * easeFactor;
             const deltaOpacity = (targetOpacity - card_animater.currentOpacity) * easeFactor;
-            const deltaDeg = (targetDeg - card_animater.currentDeg) * easeFactor;
+            const deltaDeg = (delta < 180 ? path1 : path2) * easeFactor;
 
             card_animater.currentRotateX += deltaRotateX;
             card_animater.currentRotateY += deltaRotateY;
             card_animater.currentShadowX += deltaShadowX;
             card_animater.currentShadowY += deltaShadowY;
             card_animater.currentOpacity += deltaOpacity;
-            card_animater.currentDeg += deltaDeg;
+            card_animater.currentDeg += deltaDeg + 360;
+            card_animater.currentDeg %= 360;
 
             setStyle(card_animater,
                 card_animater.currentRotateX,
@@ -153,7 +158,7 @@ class cardAnimater {
                 card_animater.currentOpacity,
                 card_animater.currentDeg);
 
-            if (Math.abs(Math.min(deltaRotateX, deltaRotateY, deltaShadowX, deltaShadowY)) > 0.1 * easeFactor)
+            if (Math.abs(Math.min(deltaRotateX, deltaRotateY, deltaShadowX, deltaShadowY, deltaOpacity, deltaDeg)) > 0.1 * easeFactor)
                 card_animater.animationFrameId = requestAnimationFrame(() => animate(card_animater));
             else
                 setStyle(card_animater,
