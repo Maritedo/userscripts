@@ -107,12 +107,10 @@
         var circumference = 2 * Math.PI * (progressCircle.getAttribute('r') || 48);
         progressCircle.style.stroke = progressColor;
         progressCircle.style.strokeDasharray = circumference;
-        progressCircle.style.strokeDashoffset = circumference;
+        progressCircle.style.strokeDashoffset = 0;
     }
 
     function clearProgress() {
-        var circumference = 2 * Math.PI * (progressCircle.getAttribute('r') || 48);
-        progressCircle.style.strokeDashoffset = circumference;
         progressCircle.style.stroke = "#0000";
     }
 
@@ -263,22 +261,114 @@
     }
 
     var lock = false;
+    const method = {
+        BROWSER: 1,
+        FETCH: 2,
+        GMAPI: 3
+    };
+    const useMethod = method.GMAPI;
     function downloadName(url, filename) {
         if (!lock) {
-            lock = true;
-            initProgress();
-            GM_download({
-                url: url, //从中下载数据的URL（必填）
-                name: filename, //文件名- 出于安全原因，需要在Tampermonkey的选项页上将文件扩展名列入白名单（必填）
-                // headers, //有关详细信息，请参阅GM_xmlhttpRequest
-                saveAs: false, //布尔值，显示一个另存为对话框
-                onerror: downloader.onerror, //如果此下载以错误结束，则执行回调
-                onload: downloader.onload, //下载完成后要执行的回调
-                onprogress: downloader.onprogress, // 如果此下载取得一些进展，则执行回调
-                ontimeout: downloader.ontimeout, //超时回调 如果此下载由于超时而失败，则执行回调
-            });
+            switch (useMethod) {
+                case method.BROWSER:
+                    downloadViaBrowser(url, filename);
+                    break;
+                case method.FETCH:
+                    lock = true;
+                    downloadViaFetch(url, filename);
+                    break;
+                case method.GMAPI:
+                    lock = true;
+                    initProgress();
+                    GM_download({
+                        url: url, //从中下载数据的URL（必填）
+                        name: filename, //文件名- 出于安全原因，需要在Tampermonkey的选项页上将文件扩展名列入白名单（必填）
+                        // headers, //有关详细信息，请参阅GM_xmlhttpRequest
+                        saveAs: false, //布尔值，显示一个另存为对话框
+                        onerror: downloader.onerror, //如果此下载以错误结束，则执行回调
+                        onload: downloader.onload, //下载完成后要执行的回调
+                        onprogress: downloader.onprogress, // 如果此下载取得一些进展，则执行回调
+                        ontimeout: downloader.ontimeout, //超时回调 如果此下载由于超时而失败，则执行回调
+                    });
+                    break;
+                default:
+                    log("INTERNAL ERROR");
+            }
+        } else {
+            log("下载进行中");
         }
-        else log("下载进行中");
+    }
+
+    /**
+     * @param {Blob} blob
+     */
+    function saveBlob(blob, filename) {
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        a.target = '_blank';
+        a.click();
+        URL.revokeObjectURL(blobUrl)
+    }
+
+    function downloadViaBrowser(url, filename) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.target = '_blank';
+        a.click();
+    }
+
+    async function downloadViaFetch(url, filename) {
+        try {
+            const response = await fetch(url, {
+                mode: 'cors'
+            });
+            if (!response.ok) {
+                lock = false;
+                return log("错误！", response.status);
+            }
+            if (stream) {
+                const reader = response.body.getReader();
+                const contentLength = +response.headers.get('Content-Length');
+                let receivedLength = 0; // 当前接收到了这么多字节
+                const chunks = []; // 接收到的二进制块的数组（包括 body）
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        lock = false;
+                        break;
+                    }
+                    chunks.push(value);
+                    receivedLength += value.length;
+
+                    console.log(`${receivedLength} / ${contentLength}`)
+                }
+
+                // Step 4：将块连接到单个 Uint8Array
+                let chunksAll = new Uint8Array(receivedLength); // (4.1)
+                let position = 0;
+                for (let chunk of chunks) {
+                    chunksAll.set(chunk, position); // (4.2)
+                    position += chunk.length;
+                }
+                saveBlob(new Blob(chunksAll), filename)
+            } else {
+                response
+                    .then(async res => {
+                        let blob = await res.blob();
+                        return blob
+                    })
+                    .then(blob => {
+                        saveBlob(blob, filename);
+                        lock = false
+                    })
+            }
+        } catch (e) {
+            lock = false;
+            log(e);
+        }
     }
 
     function createButton() {
@@ -288,7 +378,7 @@
                 cursor: "pointer",
                 textDecoration: "none",
                 userSelect: "none",
-                webkitUserSelect: "none",
+                "-webkit-user-select": "none",
                 boxShadow: "0 -3px 8px -8px rgba(0, 0, 0, 0.1), 0 5px 6px 0 rgba(0, 0, 0, 0.1), 0 -8px 18px 5px rgba(0, 0, 0, 0.05)",
                 position: "fixed",
                 bottom: "48px",
@@ -298,10 +388,8 @@
                 height: "48px",
                 backgroundColor: color.blk,
                 backdropFilter: "blur(3px)",
-                webkitBackdropFilter: "blur(3px)",
-                transitonProperty: "all",
-                transitonDuration: "1.2s",
-                transitonTimingFunction: "ease"
+                "-webkit-backdrop-filter": "blur(3px)",
+                transiton: "all .2s ease"
             }
         })
             .child(
@@ -332,7 +420,7 @@
                                         transitonProperty: "stroke-dasharray stroke-dashoffset stroke",
                                         transitonDuration: ".2s",
                                         transitonTimingFunction: "ease",
-                                        stroke: "#0000",
+                                        stroke: progressColor,
                                         strokeWidth: `${2 * width}`
                                     },
                                     d: `M50 ${width} a ${50 - width} ${50 - width} 0 0 1 0 ${100 - 2 * width} a ${50 - width} ${50 - width} 0 0 1 0 -${100 - 2 * width}`
@@ -352,8 +440,7 @@
                                 width: "100%",
                                 textAlign: "center",
                                 left: "0",
-                                top: "0",
-                                webkitUserDrag: "none"
+                                top: "0"
                             }
                         })
                             .listen("click", evt => {
@@ -410,7 +497,9 @@
                         }
         } else throw new Error("参数非合法对象属性选项")
 
-        const then = { child, append, modify, final, listen }
+        const then = {
+            child, append, modify, final, listen
+        }
 
         function final() {
             return ele

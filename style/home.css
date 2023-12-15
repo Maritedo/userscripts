@@ -21,6 +21,13 @@
     --deg: 30deg;
     --opacity: 1;
     position: relative;
+    transition-property: scale;
+    transition-duration: var(--animation-duration);
+    transition-timing-function: var(--animation-timingfn);
+}
+
+.card:hover {
+    scale: 1.03;
 }
 
 .card::after {
@@ -36,7 +43,7 @@
             rgba(0, 0, 0, var(--opacity)) 0%,
             rgba(31, 31, 31, var(--opacity)) 30%,
             rgba(127, 127, 127, var(--opacity)) 70%,
-            rgba(255, 255, 255, var(--opacity)) 100%)
+            rgba(223, 223, 223, var(--opacity)) 100%)
 }
 
 .card img {
@@ -57,6 +64,7 @@
     display: block;
     margin: 0 7px 4px 7px;
     font-size: medium;
+    text-align: center;
     padding: 4px;
     background-color: var(--primary);
     color: var(--color);

@@ -5,7 +5,13 @@
         --color: #fff;
         --color-reverse: #000;
         --shadow-1: 0 2px 16px -12px rgba(93, 93, 93, 0.5);
+        --shadow-2: 0 -14px 28px rgba(0, 0, 0, 0.25),
+            -14px 0 28px rgba(0, 0, 0, 0.25),
+            0 -10px 10px rgba(0, 0, 0, 0.22),
+            -10px 0 10px rgba(0, 0, 0, 0.22);
         --theme: rgb(152, 255, 69);
+        --theme-2: rgb(8, 225, 66);
+        --theme-contrast: rgb(255, 255, 255);
         --highlight: 0 0 16px -5px rgba(212, 212, 212, 0.5);
     }
 }
@@ -17,7 +23,9 @@
         --color: #000;
         --color-reverse: #fff;
         --shadow-1: 0 2px 16px -8px rgba(0, 0, 0, .8);
-        --theme: rgb(1, 111, 30);
+        --theme: rgb(255, 70, 75);
+        --theme-2: rgb(255, 65, 106);
+        --theme-contrast: rgb(0, 0, 0);
         --highlight: 0 0 16px -5px rgba(52, 52, 52, 0.5);
     }
 }
@@ -27,8 +35,10 @@
     --animation-duration: .3s;
     --animation-timingfn: ease;
     --animation: var(--animation-property) var(--animation-duration) var(--animation-timingfn);
+    --animation-slower: var(--animation-property) calc(2 * var(--animation-duration)) var(--animation-timingfn);
     --header-height: 64px;
     --outline: 0.5px solid var(--theme);
+    --gradient: linear-gradient(120deg, var(--theme), var(--theme-2));
 }
 
 * {

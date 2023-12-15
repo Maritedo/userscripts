@@ -6,7 +6,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UserJS</title>
     <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <base target="_blank" />
+    <style>
+        .material-symbols-rounded {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 40;
+        }
+
+        .registry {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .icon {
+            margin: 14px;
+            height: 36px;
+            width: 36px;
+            font-size: 28px;
+            line-height: 36px;
+            text-align: center;
+            border-radius: 18px;
+            color: var(--color-reverse);
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .icon.bg {
+            background-color: var(--theme);
+        }
+
+        .icon:hover {
+            color: var(--primary);
+        }
+
+        .icon.bg:hover {
+            background-color: var(--color);
+        }
+    </style>
 </head>
 
 <body>
@@ -17,10 +63,16 @@
                     <div class="box"></div>
                 </div>
                 <span class="filler"></span>
-                <a href="#" class="route" to="home">主页</a>
-                <a href="#" class="route" to="about">关于</a>
-                <a href="#" class="route" to="help">帮助</a>
-                <span class="filler"></span>
+                <a href="#home" class="route" to="home">主页</a>
+                <a href="#about" class="route" to="about">搜索</a>
+                <a href="#help" class="route" to="help">文章</a>
+                <span class="filler">
+                    <div class="registry">
+                        <span onclick="registryModal()" class="material-symbols-rounded icon bg">
+                            person
+                        </span>
+                    </div>
+                </span>
             </nav>
         </header>
         <div class="none"></div>
@@ -100,17 +152,199 @@
                 </div>
                 <div class="page" id="page_about">
                     <p style="width: 100%; text-align: center;">
-                        仅作收录之用。<br>
-                        大部分为非原创脚本。
+                        栏目二·未制作
                     </p>
                 </div>
                 <div class="page" id="page_help">
-
+                    <p style="width: 100%; text-align: center;">
+                        栏目三·未制作
+                    </p>
                 </div>
             </div>
         </section>
     </div>
+    <div class="modal hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <p class="h-main">注册</p>
+                <p class="h-sub">请依次输入所需信息</p>
+                <span onclick="regsitryClose()" class="material-symbols-rounded icon close-button">
+                    close
+                </span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-wrapper">
+                    <form id="registry" name="registry">
+                        <div class="input-section form">
+                            <label class="input-box">
+                                <p class="input-title">账号</p>
+                                <input type="text" name="username" id="username" class="input-area">
+                            </label>
+                            <button class="input-next">NEXT</button>
+                        </div>
+                        <div class="input-section form">
+                            <label class="input-box">
+                                <p class="input-title">密码</p>
+                                <input type="password" name="password" id="password" class="input-area">
+                            </label>
+                            <button class="input-next">NEXT</button>
+                        </div>
+                        <div class="input-section form">
+                            <label class="input-box">
+                                <p class="input-title">再次输入密码</p>
+                                <input type="password" name="password_confirm" class="input-area">
+                            </label>
+                            <button class="input-next">NEXT</button>
+                        </div>
+                        <div class="input-section form">
+                            <label class="input-box">
+                                <p class="input-title">邮箱</p>
+                                <input type="email" name="security_email" id="security_email" class="input-area">
+                            </label>
+                            <button class="input-next">NEXT</button>
+                        </div>
+                        <div class="input-section others">
+                            <button class="input-next">永远到达不了注册成功的真实</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
+<script src="script/checkrules.js"></script>
 <script src="script/main.js"></script>
+<script>
+    let i = 0;
+    const classes = ["first", "second", "third", "others"]
+    document.querySelectorAll("button.input-next").forEach(ele => {
+        ele.parentElement.classList.add(i < 4 ? classes[i] : classes[3]);
+        ele.parentElement.classList.add("undone")
+        if (ele.parentElement.classList.contains("form"))
+            ele.addEventListener("click", event => {
+                event.preventDefault();
+                //if (!verify(ele.parentElement.querySelector("input"))) {
+                document.querySelectorAll(".input-section").forEach(ele => {
+                    if (ele.classList.contains("form"))
+                        ele.querySelector("input").setAttribute("tab-index", -1);
+                    ele.querySelector("button").setAttribute("tab-index", -1);
+                    for (const i of classes)
+                        ele.classList.remove(i)
+                });
+                ele.parentElement.classList.remove("undone");
+                ele.parentElement.classList.add("done");
+                ele.parentElement.querySelector("input").setAttribute("tab-index", 0);
+                ele.parentElement.querySelector("button").setAttribute("tab-index", 0)
+                let j = 0, next = ele.parentElement;
+                while ((next = next.nextElementSibling)) {
+                    next.classList.add(j < 4 ? classes[j] : classes[3]);
+                    j++;
+                }
+                //}
+            })
+        else
+            ele.addEventListener("click", event => {
+                event.preventDefault();
+                document.querySelector(".modal").classList.add("hidden")
+            })
+        i++;
+    });
+
+    document.querySelectorAll(".input-box > .input-area").forEach(ele => {
+        ele.classList.add("placeholder");
+        ele.addEventListener("input", event => {
+            if (ele.value == "") {
+                ele.classList.add("placeholder");
+            } else {
+                ele.classList.remove("placeholder");
+            }
+        });
+        ele.addEventListener("blur", onBlurHandler)
+    })
+
+
+    // 避免重复弹出气泡
+    const verifStates = new WeakMap();
+
+    function verify(elem, allowBlank = false) {
+        val = elem.value;
+        let result;
+        if (rules[elem.id] && (result = ruleTest(rules[elem.id], val, allowBlank))) {
+            let lastMsgBox;
+            if ((lastMsgBox = verifStates.get(elem)))
+                lastMsgBox();
+            verifStates.set(elem, showMsgAfter(elem, result, () => {
+                elem.focus();
+                elem.scrollIntoView();
+            }));
+            elem.classList.add("error");
+            return false;
+        }
+        return true;
+    }
+
+    function onBlurHandler(e) {
+        let last;
+        if (verify(e.target, true) && (last = verifStates.get(e.target))) {
+            last();
+        }
+    }
+
+    // 来自之前一次作业
+
+    function insertAfter(targetElement, newElement) {
+        let parent = targetElement.parentNode;
+        if (parent.lastChild == targetElement) {
+            parent.appendChild(newElement);
+        } else {
+            parent.insertBefore(newElement, targetElement.nextSibling);
+        }
+    }
+
+    function showMsgAfter(inputEle, msg, callback = undefined) {
+        // 容器
+        const element = document.createElement("div");
+        element.classList.add("indicater", "hidden", "top");
+        element.style.zIndex = 1000000;
+        // 文本
+        const text = document.createElement("p");
+        text.innerText = msg;
+        // 将文本加入容器
+        element.appendChild(text);
+        // 将容器插入到DOM中显示
+        insertAfter(inputEle, element);
+        // 延时显示，删除hidden css类让信息框显示出来
+        setTimeout(() => {
+            element.classList.remove("hidden");
+        }, 10);
+        // 监听器，用于元素淡出动画完成时将元素从布局流删除
+        const _dispose = () => {
+            element.addEventListener("transitionend", function _listener(e) {
+                // if (e.propertyName != "opacity") return;
+                if (element.parentElement) {
+                    element.parentElement.removeChild(element);
+                    element.onclick = undefined;
+                    element.removeEventListener("transiotionend", _listener);
+                }
+            });
+            element.classList.add("hidden");
+        };
+        const _listener = () => {
+            _dispose();
+            callback && callback();
+            element.removeEventListener("click", _listener);
+        };
+        element.addEventListener("click", _listener)
+        return _dispose;
+    }
+
+    function registryModal() {
+        document.querySelector(".modal").classList.remove("hidden")
+    }
+
+    function regsitryClose() {
+        document.querySelector(".modal").classList.add("hidden")
+    }
+</script>
 
 </html>

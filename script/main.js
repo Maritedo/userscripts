@@ -48,6 +48,15 @@ window.addEventListener("popstate", event => {
     _push_(stateId)
 });
 
+/**
+ * 
+ * @param {Event} evt 
+ */
+function proxy(evt) {
+    // console.log(evt.type);
+    return 1;
+}
+
 class cardAnimater {
     animationFrameId;
     currentRotateX = 0;
@@ -63,9 +72,9 @@ class cardAnimater {
     }
 
     init() {
-        this.card.addEventListener("mouseenter", event => this.handleMouseEnter(event));
-        this.card.addEventListener("mousemove", event => this.handleMouseMove(event));
-        this.card.addEventListener("mouseleave", event => this.handleMouseLeave(event));
+        this.card.addEventListener("mouseenter", event => proxy(event) && this.handleMouseEnter(event));
+        this.card.addEventListener("mousemove", event => proxy(event) && this.handleMouseMove(event));
+        this.card.addEventListener("mouseleave", event => proxy(event) && this.handleMouseLeave(event));
         this.animateRotation(0, 0, 0, 0, 0, 0);
         return this;
     }
@@ -78,7 +87,7 @@ class cardAnimater {
     handleMouseMove(event) {
         cancelAnimationFrame(this.animationFrameId);
 
-        const rotateRange = 6;
+        const rotateRange = 10;
         const shadowRange = 50;
 
         const boundingRect = this.card.getBoundingClientRect();
@@ -111,7 +120,7 @@ class cardAnimater {
     }
 
     animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY, targetOpacity, targetDeg) {
-        const easeFactor = 0.05;
+        const easeFactor = 0.025;
 
         function setStyle(card_animater, crx, cry, csx, csy, opacity, deg) {
             card_animater.card.style.transform = `rotateX(${crx}deg) rotateY(${cry}deg)`;
@@ -121,16 +130,6 @@ class cardAnimater {
         }
 
         (function animate(card_animater) {
-            // 处理角度抖动
-            // var _deltaDeg = 360 - (Math.abs(targetDeg - 180) + Math.abs(card_animater.currentDeg - 180));
-            // if (Math.min(card_animater.currentDeg, targetDeg) > 0 && Math.max(card_animater.currentDeg, targetDeg) < 360 && _deltaDeg < 45) {
-            //     if (targetDeg > 337.5) {
-            //         card_animater.currentDeg += 360;
-            //     } else if (targetDeg < 22.5) {
-            //         card_animater.currentDeg -= 360;
-            //     }
-            // }
-            // console.log(~~card_animater.currentDeg, ~~targetDeg)
             const delta = Math.abs(targetDeg - card_animater.currentDeg);
             const path1 = targetDeg - card_animater.currentDeg;
             const path2 = (targetDeg - card_animater.currentDeg) > 0 ? (delta - 360) : (360 - delta);
