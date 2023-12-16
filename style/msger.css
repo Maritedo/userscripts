@@ -6,6 +6,7 @@
     background-color: var(--bgcolor);
     text-wrap: nowrap;
     border-radius: 8px;
+    cursor: pointer;
     transition-property: all;
     transition-duration: .2s;
     transition-timing-function: ease;

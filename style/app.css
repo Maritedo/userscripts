@@ -148,7 +148,8 @@ html,
     display: none;
 }
 
-.route:not(.selected):focus {
+.route:not(.selected):focus,
+.route:not(.selected):hover {
     font-size: larger !important;
 }
 
@@ -165,6 +166,7 @@ html,
     background-color: #0000;
 }
 
-.route:not(.selected):focus::before {
+.route:not(.selected):focus::before,
+.route:not(.selected):hover::before {
     background-color: var(--secondary);
 }

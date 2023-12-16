@@ -168,6 +168,7 @@
     --p: .8em;
     --f: 1em;
     display: block;
+    cursor: text;
     flex: 1;
     box-sizing: border-box;
     position: relative;

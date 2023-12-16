@@ -68,7 +68,7 @@
                 <a href="#help" class="route" to="help">文章</a>
                 <span class="filler">
                     <div class="registry">
-                        <span onclick="registryModal()" class="material-symbols-rounded icon bg">
+                        <span onclick="init();registryModal()" class="material-symbols-rounded icon bg">
                             person
                         </span>
                     </div>
@@ -78,7 +78,7 @@
         <div class="none"></div>
         <section id="content" class="content">
             <div class="content-wrapper">
-                <div class="page" id="page_home">
+                <div class="page hidden" id="page_home">
                     <div class="card-container">
                         <div class="card">
                             <img src="/images/img1.webp">
@@ -150,12 +150,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="page" id="page_about">
+                <div class="page hidden" id="page_about">
                     <p style="width: 100%; text-align: center;">
                         栏目二·未制作
                     </p>
                 </div>
-                <div class="page" id="page_help">
+                <div class="page hidden" id="page_help">
                     <p style="width: 100%; text-align: center;">
                         栏目三·未制作
                     </p>
@@ -166,7 +166,7 @@
     <div class="modal hidden">
         <div class="modal-container">
             <div class="modal-header">
-                <p class="h-main">注册</p>
+                <p class="h-main">注册(仅样式无功能)</p>
                 <p class="h-sub">请依次输入所需信息</p>
                 <span onclick="regsitryClose()" class="material-symbols-rounded icon close-button">
                     close
@@ -212,56 +212,68 @@
         </div>
     </div>
 </body>
+<script src="script/lib.js"></script>
 <script src="script/checkrules.js"></script>
 <script src="script/main.js"></script>
 <script>
-    let i = 0;
-    const classes = ["first", "second", "third", "others"]
-    document.querySelectorAll("button.input-next").forEach(ele => {
-        ele.parentElement.classList.add(i < 4 ? classes[i] : classes[3]);
-        ele.parentElement.classList.add("undone")
-        if (ele.parentElement.classList.contains("form"))
-            ele.addEventListener("click", event => {
-                event.preventDefault();
-                //if (!verify(ele.parentElement.querySelector("input"))) {
-                document.querySelectorAll(".input-section").forEach(ele => {
-                    if (ele.classList.contains("form"))
-                        ele.querySelector("input").setAttribute("tab-index", -1);
-                    ele.querySelector("button").setAttribute("tab-index", -1);
-                    for (const i of classes)
-                        ele.classList.remove(i)
-                });
-                ele.parentElement.classList.remove("undone");
-                ele.parentElement.classList.add("done");
-                ele.parentElement.querySelector("input").setAttribute("tab-index", 0);
-                ele.parentElement.querySelector("button").setAttribute("tab-index", 0)
-                let j = 0, next = ele.parentElement;
-                while ((next = next.nextElementSibling)) {
-                    next.classList.add(j < 4 ? classes[j] : classes[3]);
-                    j++;
-                }
-                //}
-            })
-        else
-            ele.addEventListener("click", event => {
-                event.preventDefault();
-                document.querySelector(".modal").classList.add("hidden")
-            })
-        i++;
-    });
+    const classes = ["first", "second", "third", "others"];
 
-    document.querySelectorAll(".input-box > .input-area").forEach(ele => {
-        ele.classList.add("placeholder");
-        ele.addEventListener("input", event => {
-            if (ele.value == "") {
-                ele.classList.add("placeholder");
-            } else {
-                ele.classList.remove("placeholder");
+    let init, inited = false;
+    init = function () {
+        let i = 0;
+        $("button.input-next", true).every(ele => {
+            const parent = ele.parent;
+            parent.removeClass("done").addClass("undone", i < 4 ? classes[i] : classes[3]);
+            if (i != 0) {
+                parent.query("input", true).prop("tabIndex", -1);
+                parent.query("button", true).prop("tabIndex", -1);
             }
+            if (!inited) {
+                if (parent.hasClass("form"))
+                    ele.on("click", event => {
+                        event.preventDefault();
+                        $(".input-section", true).every(ele => {
+                            if (ele.hasClass("form"))
+                                ele.query("input", true).prop("tabIndex", -1);
+                            ele.query("button", true).prop("tabIndex", -1);
+                            ele.removeClass(...classes)
+                        });
+                        parent.addClass("done").removeClass("undone");
+                        const nxt = parent.next;
+                        if (nxt) {
+                            nxt.query("input", true).prop("tabIndex", 0);
+                            nxt.query("button", true).prop("tabIndex", 0);
+                        }
+                        let j = 0, next = parent;
+                        while ((next = next.next)) {
+                            next.addClass(j < 4 ? classes[j] : classes[3]);
+                            j++;
+                        }
+                    })
+                else
+                    ele.on("click", event => {
+                        event.preventDefault();
+                        $(".modal", true).addClass("hidden")
+                    })
+            }
+            i++;
         });
-        ele.addEventListener("blur", onBlurHandler)
-    })
 
+        const inputBoxes = $(".input-box > .input-area", true);
+        inputBoxes.addClass("placeholder");
+        if (!inited) {
+            inited = true;
+            inputBoxes.on("input", event => {
+                const ele = event.target;
+                if (ele.value == "") {
+                    ele.classList.add("placeholder");
+                } else {
+                    ele.classList.remove("placeholder");
+                }
+            });
+            inputBoxes.on("blur", onBlurHandler);
+        }
+    }
 
     // 避免重复弹出气泡
     const verifStates = new WeakMap();

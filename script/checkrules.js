@@ -1,8 +1,6 @@
 /**
  * @type {Map<string, HTMLElement>}
  */
-const $ = (e) => document.querySelector(e);
-const elementCache = new Map();
 /**
  *
  * @param {{func: ()=>{}, msg: string}[]} rules_
@@ -64,7 +62,7 @@ const rules = {
   password_confirm: [
     {
       func: (e) => {
-        if (e) return e != elementCache.get('password').value;
+        if (e) return e != $('#password').value;
         return true;
       },
       msg: "密码输入不一致！",
@@ -105,14 +103,6 @@ const rules = {
         return !reg_.test(e);
       },
       msg: "邮箱格式错误！",
-    },
-  ],
-  verification: [
-    {
-      func: (e) => {
-        return $("canvas[verification]").verification.code != e;
-      },
-      msg: "验证码错误",
     },
   ],
   name: [
@@ -216,5 +206,3 @@ const rules = {
     },
   ]
 };
-
-for (let idname in rules) elementCache.set(idname, $(`#${idname}`));
