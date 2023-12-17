@@ -109,6 +109,20 @@ function $(selector, cache = false, env = document) {
         return then;
     }
 
+    function css(attrName, value) {
+        forEvery(ele => {
+            ele.style.setProperty(attrName, value);
+        });
+        return then;
+    }
+
+    function style(attrName, value) {
+        forEvery(ele => {
+            ele.style[attrName] = value;
+        });
+        return then;
+    }
+
     function append(ls) {
         element.push(...ls);
     }
@@ -136,6 +150,8 @@ function $(selector, cache = false, env = document) {
         query,
         prop,
         attr,
+        css,
+        style,
         eles: element,
         get ele() { return $(element[0]) },
         get pure() { return element[0] },

@@ -16,27 +16,32 @@
 <script src="/script/lib.js"></script>
 <script src="/script/animater.js"></script>
 <script>
-    const ele = $(".block").pure;
-    const animX = animater(ele)
+    const ele = $(".block");
+    const anim = animater(ele.pure);
+    const animX = anim
         .property("width", {
             from: 320,
             to: 1000
-        });
-    const animY = animater(ele)
+        })
+        .group();
+    const animY = anim
         .property("height", {
             from: 180,
             to: 500,
-        });
-    // const animation_2 = anim.property("width", {
-    //     to: 320,
-    //     proxy: e => `${e}px`,
-    //     getter: e => ele.getBoundingClientRect().width,
-    //     offset: 2000
-    // });
-    $(window).on("load", e => {
-        animX.go(0);
-        animY.go(0);
+        })
+        .group();
+    anim.proxy((props) => {
+        const width = animX.get("width");
+        const height = animY.get("height");
+        ele
+            .css("width", `${width}px`)
+            .css("height", `${height}px`);
     })
+    $(window)
+        .on("load", e => {
+            animX.go(0.5);
+            animY.go(0.5);
+        })
     $(".wrapper")
         .on("mouseenter", e => {
 

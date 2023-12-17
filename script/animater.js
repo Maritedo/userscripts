@@ -1,222 +1,209 @@
+function animater(element) {
+    return new Animater(element)
+}
+
 /**
- * 
  * @param {Element} element 
  * @param {{duration: number, timing: (value: number) => number }} options
  */
-function animater(element, options) {
-    const defaultOptions = {
-        duration: 1000,
-        timing: easeOutQuint
+class Animater {
+    /** @type {{duration: number, timing: (value: number) => number }} */
+    static defaultOptions = {
+        duration: 3000,
+        timing: Animater.easeOutQuint,
+        circle: false,
+        value: 0
     };
 
-    /** @type {{duration: number, timing: (value: number) => number }} */
-    const { duration, timing } = Object.assign({}, defaultOptions, options);
+    /** @type {Element} */
+    element;
 
-    /**  @type {Element} */
-    const ELE = element;
+    proxies = [];
 
-    /** @type {Map<string, (typeof defaultPropOpt)[]>} */
-    const properties = new Map();
-    let proxies = [];
-
-    let pad = 0;
-    let flag = false;
-    let start = 0;
-    let target = 0;
-    let current = 0;
-    let newValue = 0;
-
-    let lastTick, startTick;
-    let lock = false;
-
-    function onTick() {
-        if (flag) {
-            flag = false;
-            pad = (target = newValue) - (start = current);
-            startTick = lastTick;
-        }
-        if (current == target) return (lock = false, (start = target))
-        const tick = Date.now();
-        const offset = (target - start) / (target - current);
-        const offsetTime = keepInside(0, (tick - startTick) / duration, 1);
-        current = offset < 0.001 ? target : start + pad * timing(offsetTime);
-        for (const key of properties.keys()) {
-            const { from, to, proxy } = properties.get(key);
-            proxy && proxy(key, from + (to - from) * current, ELE);
-        }
-        lastTick = tick;
-        proxies.forEach(e => e(properties));
-        requestAnimationFrame(() => onTick())
+    constructor(element) {
+        this.element = element;
     }
 
-    /** @param {number} percent  */
-    function go(value) {
-        if (value != target) {
-            if (!lock) {
-                lock = true;
-                startTick = Date.now();
-                pad = (target = value) - start;
-                onTick();
-            } else {
-                newValue = value;
-                flag = true;
+    lock = false;
+
+    onTick() {
+        let completed = true;
+        for (const prop of this.propertyGroups) {
+            const states = prop.states;
+            if (states.flag) {
+                states.flag = false;
+                states.pad = (states.target = states.newValue) - (states.start = states.current);
+                states.tick.start = states.tick.last;
             }
+            if (states.current == states.target) {
+                states.start = states.target;
+                continue;
+            }
+            completed = false;
+            const tick = Date.now();
+            const offset = (states.target - states.start) / (states.target - states.current);
+            const offsetTime = keepInside(0, (tick - states.tick.start) / prop.duration, 1);
+            if (offset < 0.001) states.current = states.target;
+            else {
+                if (prop.circle) {
+                    const route1 = states.target - states.start;
+                    const delta = Math.abs(route1);
+                    const route2 = (states.target - states.start) > 0 ? (delta - 1) : (1 - delta);
+                    const route = delta < 0.5 ? route1 : route2;
+                    states.current = (1 + states.start + route * prop.timing(offsetTime)) % 1;
+                } else {
+                    states.current = states.start + states.pad * prop.timing(offsetTime);
+                }
+            }
+            for (const key of prop.values.keys()) {
+                const values = prop.values.get(key);
+                const { from, to, value } = values;
+                const next = from + (to - from) * states.current;
+                values.value = next;
+            }
+            states.tick.last = tick;
         }
-        return then;
+        if (completed) this.lock = false;
+        else {
+            this.proxies.forEach(e => e(this.propertyGroups));
+            requestAnimationFrame(() => this.onTick());
+        }
     }
 
-
-    function proxy(callback) {
-        proxies.push(callback);
+    proxy(callback) {
+        this.proxies.push(callback);
+        return this;
     }
 
-    function unregistryProxy(callback) {
+    unregistryProxy(callback) {
         const re = [];
-        proxies.forEach(e => {
+        this.proxies.forEach(e => {
             if (e !== callback) re.push(e)
         });
-        proxies = re;
-
+        this.proxies = re;
     }
 
-    const then = {
-        property,
-        go,
-        proxy,
-        element: ELE,
-        properties
-    };
+    /** @type {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }[]} */
+    propertyGroups = [];
 
-    /** @type {{from: number, to: number, proxy: (value: number) => number, getter: (value: number) => number}} */
-    const defaultPropOpt = {
+    static defaultMeta = {
         from: 0,
         to: 1,
-        proxy: (k, v, e) => e.style.setProperty(k, `${v}px`),
-        getter: e => e
-    }
+        value: 0
+    };
 
     /**
-     * @param {string} prop 
-     * @param {defaultPropOpt & { from: number}} options 
+     * @param {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }} propGroup 
      */
-    function property(prop, options) {
-        const { from, to, proxy, getter } = Object.assign({}, defaultPropOpt, options);
-        properties.set(prop, { from, to, proxy, getter });
-        return then;
+    gen(propGroup, defaultVal = 0) {
+        const go = (value) => {
+            if (value != propGroup.states.target) {
+                if (!this.lock) {
+                    this.lock = true;
+                    propGroup.states.tick.start = Date.now();
+                    propGroup.states.pad = (propGroup.states.target = value) - propGroup.states.start;
+                    this.onTick();
+                } else {
+                    propGroup.states.newValue = value;
+                    propGroup.states.flag = true;
+                }
+            }
+            return this;
+        }
+        const reset = () => go(defaultVal);
+        const get = (keyName) => propGroup.values.get(keyName).value;
+        return {
+            go,
+            reset,
+            get
+        }
     }
 
-    return then;
-}
+    property(prop, options) {
+        const props = new Map();
+        const _animater_ = this;
+        const group = (options) => {
+            const { timing, duration, circle, value } = Object.assign({}, Animater.defaultOptions, options);
+            const propGroup = {
+                states: {
+                    tick: {
+                        last: 0,
+                        start: 0
+                    },
+                    pad: 0,
+                    flag: false,
+                    start: value,
+                    target: value,
+                    current: value,
+                    newValue: 0
+                },
+                values: props,
+                timing,
+                duration,
+                circle
+            };
+            _animater_.propertyGroups.push(propGroup);
+            return _animater_.gen(propGroup, value);
+        }
+        const property = (prop, options) => {
+            const { from, to, value } = Object.assign({}, Animater.defaultMeta, options);
+            props.set(prop, { from, to, value });
+            return {
+                property,
+                group
+            };
+        }
+        return property(prop, options);
+    }
 
-animater.asGroup = (...animaters) => {
+    static easeOutQuint(x) {
+        return 1 - Math.pow(1 - x, 5);
+    }
 
-}
-
-/**
- * @returns {(from: number, to: number, duration: number, current: number) => number}
- */
-function timingFn(fn) {
-    return function (from, to, duration, current) {
-        const pad = to - from;
-        const per = keepInside(0, current / duration, 1);
-        return from + fn(per) * pad;
+    static easeInOutCubic(x) {
+        return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     }
 }
 
-function easeOutQuint(x) {
-    return 1 - Math.pow(1 - x, 5);
-}
+class AnimaterGroup {
+    animaters = [];
+    states = new Map();
+    proxies = [];
+    get values() {
+        const _values_ = [];
+        for (const animater of this.animaters) {
+            const values = animater.values;
+            for (const key of values.keys())
+                _values_.push({
+                    name: key,
+                    value: values.get(key)
+                })
+        }
+    }
 
-function easeInOutCubic(x) {
-    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-}
+    constructor(...animaters) {
+        this.animaters.push(animaters);
+        animaters.forEach(animater => {
+            animater.proxy((e) => this.observer(e));
+            this.states.set(animater, false);
+        })
+    }
 
-animater.ease = timingFn(easeInOutCubic);
-animater.easeIn = timingFn(easeOutQuint);
+    observer(animater) {
+        this.states.set(animater, true);
+        for (const value of this.states.values())
+            if (!value) return;
+        for (const anim of this.animaters)
+            this.states.set(anim, false);
+        this.proxies.forEach(p => p(this));
+    }
+
+    proxy(callback) {
+        this.proxies.push(callback);
+        return this;
+    }
+}
 
 function keepInside(min, val, max) {
     return Math.max(Math.min(val, max), min)
-}
-
-class Timer {
-    duration;
-    onUpdateCallback;
-    onEndCallback;
-    onPausedCallback;
-    remainedTime;
-    _lastStart = 0;
-    resetFlag = false;
-
-    _paused = true;
-    get paused() {
-        return this._paused;
-    }
-    set paused(val) {
-        this._paused = val;
-        if (!val) {
-            this._lastStart = Date.now();
-            this.__frame__(this);
-        }
-    }
-
-    constructor(duration, onUpdateCallback, onEndCallback) {
-        this.duration = duration;
-        this.remainedTime = duration;
-        this.onUpdateCallback = onUpdateCallback;
-        this.onEndCallback = onEndCallback;
-    }
-
-    reset() {
-        if (this.paused) {
-            this.__reset__();
-        } else {
-            this.resetFlag = true;
-            this.paused = true;
-        }
-        return this;
-    }
-
-    start() {
-        if (this.paused) {
-            this.paused = false;
-            this.onUpdateCallback && this.onUpdateCallback(0);
-        }
-        return this;
-    }
-
-    pause(onPausedCallback = null) {
-        this.paused = true;
-        this.onPausedCallback = onPausedCallback;
-        return this;
-    }
-
-    __frame__(timer) {
-        if (!timer.paused) {
-            const timeNow = Date.now();
-            const timeLasted = timeNow - timer._lastStart
-            if (timeLasted < timer.remainedTime) {
-                timer.onUpdateCallback && timer.onUpdateCallback(timeLasted);
-                requestAnimationFrame(() => timer.__frame__(timer));
-            } else {
-                timer.__end__();
-            }
-        } else {
-            if (timer.resetFlag) {
-                timer.__reset__();
-            }
-            this.onPausedCallback && this.onPausedCallback();
-        }
-    }
-
-    __reset__() {
-        this.resetFlag = false;
-        this.remainedTime = this.duration;
-    }
-
-    __end__() {
-        this.remainedTime = 0;
-        this.paused = true;
-        this.onUpdateCallback && this.onUpdateCallback(this.duration);
-        this.onEndCallback && this.onEndCallback();
-    }
 }

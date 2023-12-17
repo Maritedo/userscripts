@@ -171,39 +171,98 @@ class cardAnimater {
     }
 }
 
-const animaters = [];
-document.querySelectorAll(".card").forEach(element => {
+const shadowRange = 30;
+const rotateRange = 8;
+$(".card").each(element => {
     // animaters.push((new cardAnimater(element)).init());
-    const axisX = animater(element)
+    const anim = animater(element.pure)
+    const axisX = anim
         .property("rotateX", {
-            from: 0,
-            to: 15,
-            proxy: null
+            from: -rotateRange,
+            to: rotateRange
         })
         .property("shadowX", {
-            from: 0,
-            to: 50,
-            proxy: null
+            from: -shadowRange,
+            to: shadowRange
         })
-        .proxy(values => {
-
+        .group({
+            value: 0.5
         });
-    const axisY = animater(element)
+    const axisY = anim
         .property("rotateY", {
-            from: 0,
-            to: 15,
-            proxy: null
+            from: -rotateRange,
+            to: rotateRange
         })
         .property("shadowY", {
-            from: 0,
-            to: 50,
-            proxy: null
+            from: -shadowRange,
+            to: shadowRange
         })
-        .proxy(values => {
-
+        .group({
+            value: 0.5
         });
-    $(element)
-        .on("mouseenter touchstart", null)
-        .on("mousemove  touchmove", null)
-        .on("mouseleave touchend", null)
+    const degree = anim
+        .property("degree", {
+            from: 0,
+            to: 360
+        })
+        .group({
+            circle: true
+        });
+    const opacity = anim
+        .property("opacity", {
+            from: 0,
+            to: 1
+        })
+        .group();
+
+    const myProxy = () => {
+        const rx = axisX.get("rotateX");
+        const ry = axisY.get("rotateY");
+        const sx = axisX.get("shadowX");
+        const sy = axisY.get("shadowY");
+        const dg = degree.get("degree");
+        const op = opacity.get("opacity");
+        element
+            .style("transform", `rotateX(${-rx}deg) rotateY(${ry}deg)`)
+            .style("boxShadow", `${sx}px ${sy}px 20px -10px rgba(0, 0, 0, 0.6)`)
+            .css("--deg", dg + "deg")
+            .css("--opacity", op / 4);
+    };
+    anim.proxy(myProxy);
+    myProxy();
+    element
+        .on("mouseenter touchstart", event => {
+
+        })
+        .on("mousemove  touchmove", event => {
+            const boundingRect = element.pure.getBoundingClientRect();
+
+            const offsetX = event.clientX - boundingRect.left;
+            const offsetY = event.clientY - boundingRect.top;
+
+            const percentX = offsetX / boundingRect.width;
+            const percentY = offsetY / boundingRect.height;
+
+            let deg;
+            if (percentX == 0.5) {
+                deg = percentY > 0.5 ? 0 : 180;
+            } else {
+                deg = Math.atan((percentY - 0.5) / (percentX - 0.5)) * 180 / Math.PI + ((percentX > 0.5) ? 90 : 270);
+            }
+
+            axisX.go(percentX);
+            axisY.go(percentY);
+            opacity.go(keepInside(0, Math.sqrt(4 * ((percentX - 0.5) ** 2 + (percentY - 0.5) ** 2)), 1));
+            degree.go(deg / 360);
+        })
+        .on("mouseleave touchend", event => {
+            axisX.go(.5);
+            axisY.go(.5);
+            degree.go(0);
+            opacity.go(0);
+        });
+    axisX.go(.5);
+    axisY.go(.5);
+    degree.go(0);
+    opacity.go(0);
 });
