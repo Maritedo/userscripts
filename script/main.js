@@ -52,7 +52,7 @@ window.addEventListener("popstate", event => {
  * 
  * @param {Event} evt 
  */
-function proxy(evt) {
+function proxy_(evt) {
     // console.log(evt.type);
     return 1;
 }
@@ -72,9 +72,9 @@ class cardAnimater {
     }
 
     init() {
-        this.card.addEventListener("mouseenter", event => proxy(event) && this.handleMouseEnter(event));
-        this.card.addEventListener("mousemove", event => proxy(event) && this.handleMouseMove(event));
-        this.card.addEventListener("mouseleave", event => proxy(event) && this.handleMouseLeave(event));
+        this.card.addEventListener("mouseenter", event => proxy_(event) && this.handleMouseEnter(event));
+        this.card.addEventListener("mousemove", event => proxy_(event) && this.handleMouseMove(event));
+        this.card.addEventListener("mouseleave", event => proxy_(event) && this.handleMouseLeave(event));
         this.animateRotation(0, 0, 0, 0, 0, 0);
         return this;
     }
@@ -173,5 +173,37 @@ class cardAnimater {
 
 const animaters = [];
 document.querySelectorAll(".card").forEach(element => {
-    animaters.push((new cardAnimater(element)).init());
+    // animaters.push((new cardAnimater(element)).init());
+    const axisX = animater(element)
+        .property("rotateX", {
+            from: 0,
+            to: 15,
+            proxy: null
+        })
+        .property("shadowX", {
+            from: 0,
+            to: 50,
+            proxy: null
+        })
+        .proxy(values => {
+
+        });
+    const axisY = animater(element)
+        .property("rotateY", {
+            from: 0,
+            to: 15,
+            proxy: null
+        })
+        .property("shadowY", {
+            from: 0,
+            to: 50,
+            proxy: null
+        })
+        .proxy(values => {
+
+        });
+    $(element)
+        .on("mouseenter touchstart", null)
+        .on("mousemove  touchmove", null)
+        .on("mouseleave touchend", null)
 });

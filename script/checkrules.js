@@ -1,7 +1,4 @@
 /**
- * @type {Map<string, HTMLElement>}
- */
-/**
  *
  * @param {{func: ()=>{}, msg: string}[]} rules_
  * @param {string} val_

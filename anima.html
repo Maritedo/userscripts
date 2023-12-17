@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="block">
+        </div>
+    </div>
+</body>
+<script src="/script/lib.js"></script>
+<script src="/script/animater.js"></script>
+<script>
+    const ele = $(".block").pure;
+    const animX = animater(ele)
+        .property("width", {
+            from: 320,
+            to: 1000
+        });
+    const animY = animater(ele)
+        .property("height", {
+            from: 180,
+            to: 500,
+        });
+    // const animation_2 = anim.property("width", {
+    //     to: 320,
+    //     proxy: e => `${e}px`,
+    //     getter: e => ele.getBoundingClientRect().width,
+    //     offset: 2000
+    // });
+    $(window).on("load", e => {
+        animX.go(0);
+        animY.go(0);
+    })
+    $(".wrapper")
+        .on("mouseenter", e => {
+
+        })
+        .on("mousemove", e => {
+            const perX = keepInside(0, (e.offsetX - 320) / (1000 - 320), 1);
+            const perY = keepInside(0, (e.offsetY - 180) / (500 - 180), 1);
+            animX.go(perX);
+            animY.go(perY);
+        })
+        .on("mouseleave", e => {
+
+        })
+</script>
+<style>
+    body,
+    html,
+    .wrapper {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        background-color: #333;
+    }
+
+    .wrapper {
+        position: relative;
+    }
+
+    .block {
+        z-index: 0;
+        position: absolute;
+        height: 180px;
+        width: 320px;
+        background-color: #6cf;
+    }
+
+    .block::before {
+        content: "";
+        z-index: -1;
+        position: absolute;
+        top: 180px;
+        left: 320px;
+        height: 320px;
+        width: 680px;
+        background-color: #fc66;
+    }
+</style>
+
+</html>

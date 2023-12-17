@@ -7,7 +7,7 @@ function $(selector, cache = false, env = document) {
     };
 
     let element, TYPE;
-    const forEvery = (cbfn) => TYPE !== ElementType.ELEMENT ? cbfn(element) : element.forEach(ele => cbfn(ele));
+    const forEvery = (cbfn) => element.forEach(ele => cbfn(ele));
 
     if (selector === document) {
         TYPE = ElementType.DOCUMENT;
@@ -53,12 +53,16 @@ function $(selector, cache = false, env = document) {
     }
 
     function on(evtType, evtCallback) {
-        forEvery(e => e.addEventListener(evtType, evtCallback));
+        evtType.split(/\s+/).forEach(evt => {
+            forEvery(e => e.addEventListener(evt, evtCallback));
+        });
         return then;
     }
 
     function off(evtType, evtCallback) {
-        forEvery(e => e.removeEventListener(evtType, evtCallback));
+        evtType.split(/\s+/).forEach(evt => {
+            forEvery(e => e.removeEventListener(evt, evtCallback));
+        });
         return then;
     }
 
@@ -127,7 +131,7 @@ function $(selector, cache = false, env = document) {
         addClass,
         removeClass,
         hasClass,
-        every: (fn) => forEvery(e => fn($(e))),
+        each: (fn) => forEvery(e => fn($(e))),
         append,
         query,
         prop,

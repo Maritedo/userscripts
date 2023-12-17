@@ -213,6 +213,7 @@
     </dialog>
 </body>
 <script src="script/lib.js"></script>
+<script src="script/animater.js"></script>
 <script src="script/checkrules.js"></script>
 <script src="script/main.js"></script>
 <script>
@@ -221,7 +222,7 @@
     let init, inited = false;
     init = function () {
         let i = 0;
-        $("button.input-next", true).every(ele => {
+        $("button.input-next", true).each(ele => {
             const parent = ele.parent;
             parent.removeClass("done").addClass("undone", i < 4 ? classes[i] : classes[3]);
             if (i != 0) {
@@ -232,7 +233,7 @@
                 if (parent.hasClass("form"))
                     ele.on("click", event => {
                         event.preventDefault();
-                        $(".input-section", true).every(ele => {
+                        $(".input-section", true).each(ele => {
                             if (ele.hasClass("form"))
                                 ele.query("input", true).prop("tabIndex", -1);
                             ele.query("button", true).prop("tabIndex", -1);
