@@ -3,24 +3,31 @@ function animater(element) {
 }
 
 class Animater {
-    /** @type {{duration: number, timing: (value: number) => number }} */
+    /** @type {{duration: number, timing: (value: number) => number, circle: boolean, value: number }} */
     static defaultOptions = {
         duration: 1000,
         timing: Animater.easeOutQuint,
         circle: false,
         value: 0
     };
-
+    /** @type {{from: number, to: number, value: number}} */
+    static defaultMeta = {
+        from: 0,
+        to: 1,
+        value: 0
+    };
     /** @type {Element} */
     element;
-
+    /** @type {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number, completed: boolean }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }[]} */
+    propertyGroups = [];
+    /** @type {(()=>any)[]} */
     proxies = [];
+    /** @type {boolean} */
+    lock = false;
 
     constructor(element) {
         this.element = element;
     }
-
-    lock = false;
 
     onTick() {
         let completed = true;
@@ -31,12 +38,16 @@ class Animater {
                 states.pad = (states.target = states.newValue) - (states.start = states.current);
                 states.tick.start = states.tick.last;
             }
-            if (states.current == states.target) {
+            const tick = Date.now();
+            states.tick.last = tick;
+            if (states.completed) continue;
+            else if (states.current == states.target) {
                 states.start = states.target;
+                states.completed = true;
                 continue;
             }
+
             completed = false;
-            const tick = Date.now();
             const offset = (states.target - states.start) / (states.target - states.current);
             const offsetTime = keepInside(0, (tick - states.tick.start) / prop.duration, 1);
             if (offset < 0.001) states.current = states.target;
@@ -53,11 +64,10 @@ class Animater {
             }
             for (const key of prop.values.keys()) {
                 const values = prop.values.get(key);
-                const { from, to, value } = values;
+                const { from, to } = values;
                 const next = from + (to - from) * states.current;
                 values.value = next;
             }
-            states.tick.last = tick;
         }
         if (completed) this.lock = false;
         else {
@@ -79,24 +89,18 @@ class Animater {
         this.proxies = re;
     }
 
-    /** @type {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }[]} */
-    propertyGroups = [];
-
-    static defaultMeta = {
-        from: 0,
-        to: 1,
-        value: 0
-    };
-
     /**
-     * @param {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }} propGroup 
+     * @param {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number, completed: boolean }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }} propGroup 
+     * @param {number} defaultVal
      */
     gen(propGroup, defaultVal = 0) {
+        let then;
         const go = (value) => {
-            if (value != propGroup.states.target) {
+            if (propGroup.states.target != value) {
+                propGroup.states.completed = false;
                 if (!this.lock) {
                     this.lock = true;
-                    propGroup.states.tick.start = Date.now();
+                    propGroup.states.tick.last = propGroup.states.tick.start = Date.now();
                     propGroup.states.pad = (propGroup.states.target = value) - propGroup.states.start;
                     this.onTick();
                 } else {
@@ -104,15 +108,12 @@ class Animater {
                     propGroup.states.flag = true;
                 }
             }
-            return this;
+            return then;
         }
         const reset = () => go(defaultVal);
         const get = (keyName) => propGroup.values.get(keyName).value;
-        return {
-            go,
-            reset,
-            get
-        }
+        then = { go, reset, get };
+        return then;
     }
 
     property(prop, options) {
@@ -131,12 +132,13 @@ class Animater {
                     start: value,
                     target: value,
                     current: value,
-                    newValue: 0
+                    newValue: 0,
+                    completed: true
                 },
                 values: props,
                 timing,
-                duration,
-                circle
+                circle,
+                duration
             };
             _animater_.propertyGroups.push(propGroup);
             return _animater_.gen(propGroup, value);
@@ -144,10 +146,7 @@ class Animater {
         const property = (prop, options) => {
             const { from, to, value } = Object.assign({}, Animater.defaultMeta, options);
             props.set(prop, { from, to, value });
-            return {
-                property,
-                group
-            };
+            return { property, group };
         }
         return property(prop, options);
     }

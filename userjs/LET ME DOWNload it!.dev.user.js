@@ -1,22 +1,22 @@
 // ==UserScript==
 // @name         LET ME DOWNload it! DEV
-// @namespace    https://userjs.justtryit.top/
-// @version      0.1.0
+// @namespace    https://userjs.justtryit.top/#home
+// @version      0.1.2
 // @description
 // @author       blairollie63@gmail.com
 // @match        *://*.ai-augmented.com/*
 // @run-at       document-start
 // @grant        GM_download
-// @updateURL    https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
-// @downloadURL  https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
-// @installURL   https://userjs.justtryit.top/LET%20ME%20DOWNload%20it!.min.user.js
-// @supportURL   https://userjs.justtryit.top/
+// @updateURL    https://userjs.justtryit.top/userjs/LET%20ME%20DOWNload%20it!.dev.user.js
+// @downloadURL  https://userjs.justtryit.top/userjs/LET%20ME%20DOWNload%20it!.dev.user.js
+// @installURL   https://userjs.justtryit.top/userjs/LET%20ME%20DOWNload%20it!.dev.user.js
+// @supportURL   https://userjs.justtryit.top/#about
 // ==/UserScript==
 
 (function () {
     'use strict';
 
-    const useDebug = true;
+    const useDebug = false;
     const catchConsole = true;
     const console_log = console.log;
     // const console_info = console.info;

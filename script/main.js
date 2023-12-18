@@ -48,133 +48,9 @@ window.addEventListener("popstate", event => {
     _push_(stateId)
 });
 
-/**
- * 
- * @param {Event} evt 
- */
-function proxy_(evt) {
-    // console.log(evt.type);
-    return 1;
-}
-
-class cardAnimater {
-    animationFrameId;
-    currentRotateX = 0;
-    currentRotateY = 0;
-    currentShadowX = 0;
-    currentShadowY = 0;
-    currentDeg = 0;
-    currentOpacity = 0;
-    card;
-
-    constructor(ele) {
-        this.card = ele;
-    }
-
-    init() {
-        this.card.addEventListener("mouseenter", event => proxy_(event) && this.handleMouseEnter(event));
-        this.card.addEventListener("mousemove", event => proxy_(event) && this.handleMouseMove(event));
-        this.card.addEventListener("mouseleave", event => proxy_(event) && this.handleMouseLeave(event));
-        this.animateRotation(0, 0, 0, 0, 0, 0);
-        return this;
-    }
-
-    handleMouseEnter(event) {
-        cancelAnimationFrame(this.animationFrameId);
-
-    }
-
-    handleMouseMove(event) {
-        cancelAnimationFrame(this.animationFrameId);
-
-        const rotateRange = 10;
-        const shadowRange = 50;
-
-        const boundingRect = this.card.getBoundingClientRect();
-        const offsetX = boundingRect.width / 2 - (event.clientX - boundingRect.left);
-        const offsetY = boundingRect.height / 2 - (event.clientY - boundingRect.top);
-
-        const percentX = (offsetX * 2 / boundingRect.width);
-        const percentY = (offsetY * 2 / boundingRect.height);
-
-        const targetRotateX = - percentX * rotateRange;
-        const targetRotateY = percentY * rotateRange;
-
-        const targetShadowX = (offsetX / boundingRect.width) * shadowRange;
-        const targetShadowY = (offsetY / boundingRect.height) * shadowRange;
-
-        let deg;
-        if (percentX == 0) {
-            deg = percentY > 0 ? 0 : 180;
-        } else {
-            deg = Math.atan(percentY / percentX) * 180 / Math.PI + ((percentX > 0) ? 90 : 270);
-        }
-        const opacity = Math.sqrt(percentX ** 2 + percentY ** 2);
-        this.animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY, opacity, deg);
-
-    }
-
-    handleMouseLeave(event) {
-        cancelAnimationFrame(this.animationFrameId);
-        this.animateRotation(0, 0, 0, 0, 0, this.currentDeg);
-    }
-
-    animateRotation(targetRotateX, targetRotateY, targetShadowX, targetShadowY, targetOpacity, targetDeg) {
-        const easeFactor = 0.025;
-
-        function setStyle(card_animater, crx, cry, csx, csy, opacity, deg) {
-            card_animater.card.style.transform = `rotateX(${crx}deg) rotateY(${cry}deg)`;
-            card_animater.card.style.boxShadow = `${csx}px ${csy}px 20px -10px rgba(0, 0, 0, 0.6)`;
-            card_animater.card.style.setProperty("--deg", deg + "deg");
-            card_animater.card.style.setProperty("--opacity", opacity / 4);
-        }
-
-        (function animate(card_animater) {
-            const delta = Math.abs(targetDeg - card_animater.currentDeg);
-            const path1 = targetDeg - card_animater.currentDeg;
-            const path2 = (targetDeg - card_animater.currentDeg) > 0 ? (delta - 360) : (360 - delta);
-
-            const deltaRotateX = (targetRotateX - card_animater.currentRotateX) * easeFactor;
-            const deltaRotateY = (targetRotateY - card_animater.currentRotateY) * easeFactor;
-            const deltaShadowX = (targetShadowX - card_animater.currentShadowX) * easeFactor;
-            const deltaShadowY = (targetShadowY - card_animater.currentShadowY) * easeFactor;
-            const deltaOpacity = (targetOpacity - card_animater.currentOpacity) * easeFactor;
-            const deltaDeg = (delta < 180 ? path1 : path2) * easeFactor;
-
-            card_animater.currentRotateX += deltaRotateX;
-            card_animater.currentRotateY += deltaRotateY;
-            card_animater.currentShadowX += deltaShadowX;
-            card_animater.currentShadowY += deltaShadowY;
-            card_animater.currentOpacity += deltaOpacity;
-            card_animater.currentDeg += deltaDeg + 360;
-            card_animater.currentDeg %= 360;
-
-            setStyle(card_animater,
-                card_animater.currentRotateX,
-                card_animater.currentRotateY,
-                card_animater.currentShadowX,
-                card_animater.currentShadowY,
-                card_animater.currentOpacity,
-                card_animater.currentDeg);
-
-            if (Math.abs(Math.min(deltaRotateX, deltaRotateY, deltaShadowX, deltaShadowY, deltaOpacity, deltaDeg)) > 0.1 * easeFactor)
-                card_animater.animationFrameId = requestAnimationFrame(() => animate(card_animater));
-            else
-                setStyle(card_animater,
-                    targetRotateX,
-                    targetRotateY,
-                    targetShadowX,
-                    targetShadowY,
-                    targetOpacity,
-                    targetDeg)
-        })(this);
-    }
-}
-
 const shadowRange = 30;
 const rotateRange = 8;
 $(".card").each(element => {
-    // animaters.push((new cardAnimater(element)).init());
     const anim = animater(element.pure)
     const axisX = anim
         .property("rotateX", {
@@ -255,18 +131,19 @@ $(".card").each(element => {
             let deg;
             if (x == 0) {
                 deg = y > 0 ? 0 : 180;
-            } else {
+            }
+            else {
                 deg = Math.atan(y / x) * 180 / Math.PI + ((x > 0) ? 90 : 270);
             }
 
             axisX.go(percentX);
             axisY.go(percentY);
-            opacity.go(keepInside(0, Math.sqrt(4 * (x ** 2 + y ** 2)), 1));
             degree.go(deg / 360);
+            opacity.go(keepInside(0, Math.sqrt(4 * (x ** 2 + y ** 2)), 1));
         })
         .on("mouseleave touchend", event => {
             reset();
         });
-    
+
     reset();
 });

@@ -1,5 +1,15 @@
 /**
  * 
+ * @param {Event} evt 
+ */
+function proxy_(evt) {
+    // console.log(evt.type);
+    return 1;
+}
+
+
+/**
+ * 
  * @param {Element} element 
  * @param {{duration: number, timing: (value: number) => number }} options
  */
