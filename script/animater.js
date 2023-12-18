@@ -2,14 +2,10 @@ function animater(element) {
     return new Animater(element)
 }
 
-/**
- * @param {Element} element 
- * @param {{duration: number, timing: (value: number) => number }} options
- */
 class Animater {
     /** @type {{duration: number, timing: (value: number) => number }} */
     static defaultOptions = {
-        duration: 3000,
+        duration: 1000,
         timing: Animater.easeOutQuint,
         circle: false,
         value: 0
@@ -162,45 +158,6 @@ class Animater {
 
     static easeInOutCubic(x) {
         return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-    }
-}
-
-class AnimaterGroup {
-    animaters = [];
-    states = new Map();
-    proxies = [];
-    get values() {
-        const _values_ = [];
-        for (const animater of this.animaters) {
-            const values = animater.values;
-            for (const key of values.keys())
-                _values_.push({
-                    name: key,
-                    value: values.get(key)
-                })
-        }
-    }
-
-    constructor(...animaters) {
-        this.animaters.push(animaters);
-        animaters.forEach(animater => {
-            animater.proxy((e) => this.observer(e));
-            this.states.set(animater, false);
-        })
-    }
-
-    observer(animater) {
-        this.states.set(animater, true);
-        for (const value of this.states.values())
-            if (!value) return;
-        for (const anim of this.animaters)
-            this.states.set(anim, false);
-        this.proxies.forEach(p => p(this));
-    }
-
-    proxy(callback) {
-        this.proxies.push(callback);
-        return this;
     }
 }
 

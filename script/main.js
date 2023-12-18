@@ -211,7 +211,7 @@ $(".card").each(element => {
     const opacity = anim
         .property("opacity", {
             from: 0,
-            to: 1
+            to: 0.4
         })
         .group();
 
@@ -226,10 +226,16 @@ $(".card").each(element => {
             .style("transform", `rotateX(${-rx}deg) rotateY(${ry}deg)`)
             .style("boxShadow", `${sx}px ${sy}px 20px -10px rgba(0, 0, 0, 0.6)`)
             .css("--deg", dg + "deg")
-            .css("--opacity", op / 4);
+            .css("--opacity", op);
     };
     anim.proxy(myProxy);
     myProxy();
+    const reset = () => {
+        axisX.reset();
+        axisY.reset();
+        degree.reset();
+        opacity.reset();
+    };
     element
         .on("mouseenter touchstart", event => {
 
@@ -243,26 +249,24 @@ $(".card").each(element => {
             const percentX = offsetX / boundingRect.width;
             const percentY = offsetY / boundingRect.height;
 
+            const x = percentX - 0.5;
+            const y = percentY - 0.5;
+
             let deg;
-            if (percentX == 0.5) {
-                deg = percentY > 0.5 ? 0 : 180;
+            if (x == 0) {
+                deg = y > 0 ? 0 : 180;
             } else {
-                deg = Math.atan((percentY - 0.5) / (percentX - 0.5)) * 180 / Math.PI + ((percentX > 0.5) ? 90 : 270);
+                deg = Math.atan(y / x) * 180 / Math.PI + ((x > 0) ? 90 : 270);
             }
 
             axisX.go(percentX);
             axisY.go(percentY);
-            opacity.go(keepInside(0, Math.sqrt(4 * ((percentX - 0.5) ** 2 + (percentY - 0.5) ** 2)), 1));
+            opacity.go(keepInside(0, Math.sqrt(4 * (x ** 2 + y ** 2)), 1));
             degree.go(deg / 360);
         })
         .on("mouseleave touchend", event => {
-            axisX.go(.5);
-            axisY.go(.5);
-            degree.go(0);
-            opacity.go(0);
+            reset();
         });
-    axisX.go(.5);
-    axisY.go(.5);
-    degree.go(0);
-    opacity.go(0);
+    
+    reset();
 });
