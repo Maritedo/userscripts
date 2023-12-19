@@ -6,7 +6,6 @@ body,
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    min-width: 400px;
 }
 
 body,
@@ -26,15 +25,20 @@ html,
     position: fixed;
     height: var(--header-height);
     width: 100%;
+    display: flex;
+    padding-left: 10px;
+    padding-right: 10px;
+    flex-direction: row;
     background-color: var(--secondary);
     box-shadow: var(--shadow-1);
-    backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
 }
 
 .content {
     z-index: 1;
     box-sizing: border-box;
+    min-width: 400px;
     height: fit-content;
     min-height: calc(100% - var(--header-height));
     background-color: var(--primary);
@@ -45,7 +49,6 @@ html,
     background-color: var(--primary);
     height: var(--header-height);
 }
-
 
 .wrapper::-webkit-scrollbar {
     width: 8px;
@@ -64,17 +67,29 @@ html,
 }
 
 .navigator {
-    display: flex;
-    display: -webkit-flex;
-    flex-direction: row;
-    height: 100%;
+    flex: 3;
     position: relative;
-    user-select: none;
+    --w: 1%;
+    --h: 18%;
+}
+
+.action {
+    flex: 2;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+}
+
+.routes {
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: row;
+    position: relative;
     -webkit-user-select: none;
+    user-select: none;
 }
 
 .route {
-    display: inline-block;
     cursor: pointer;
     -webkit-user-drag: none;
     flex: 1;
@@ -88,85 +103,132 @@ html,
     z-index: 0;
 }
 
-.navigator .filler {
-    flex: 1;
-}
-
-.navigator .indicator {
+.indicator {
     position: absolute;
     height: 100%;
     width: 100%;
     z-index: -1;
-    display: flex;
     display: -webkit-flex;
+    display: flex;
 }
 
-.navigator .indicator .box {
+.indicator .box {
     flex: 1;
     transition: var(--animation);
     position: relative;
-    height: 100%;
 }
 
-.navigator {
-    --w: 1%;
-    --h: 18%;
-}
-
-.navigator .indicator .box::after {
+.indicator .box::after {
     content: "";
     position: absolute;
     left: var(--w);
+    right: var(--w);
     top: var(--h);
-    width: calc(100% - 2 * var(--w));
-    height: calc(100% - 2 * var(--h));
+    bottom: var(--h);
     background-color: var(--theme);
     border-radius: 8px;
-    box-shadow: 0 5px 16px -8px rgba(0, 0, 0, .2), 0 -5px 16px -8px rgba(0, 0, 0, .2);
+    box-shadow: var(--shadow-1);
 }
 
-.navigator .indicator::before {
+.indicator::before,
+.indicator::after {
     content: "";
     transition: var(--animation);
     height: 100%;
+}
+
+.indicator::before {
     flex: var(--before);
 }
 
-.navigator .indicator::after {
-    content: "";
-    transition: var(--animation);
-    height: 100%;
+.indicator::after {
     flex: calc(var(--sum) - var(--before) - 1);
 }
 
-.selected {
+.route:focus,
+.route:hover {
+    font-size: larger;
+}
+
+.route.selected {
     font-size: 1.25em;
     color: var(--color-reverse);
 }
 
+.search {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    align-content: center;
+    justify-content: center;
+    position: relative;
+    margin-right: 4px;
+}
+
+.search-input {
+    display: block;
+    box-sizing: border-box;
+    width: 60%;
+    height: 36px;
+    line-height: 36px;
+    padding-left: 8px;
+    padding-right: 30px;
+    border: 1px solid #0000;
+    border-radius: 8px;
+    background-color: var(--primary);
+    border: none;
+    outline: none;
+}
+
+.search .search-button {
+    position: absolute;
+    height: 36px;
+    right: 20%;
+    cursor: pointer;
+}
+
+@media screen and (max-width: 960px) {
+    .search-input {
+        width: 95%;
+    }
+
+    .search .search-button {
+        right: 2.5%;
+    }
+}
+
+@media screen and (min-width: 960px) {
+    .routes::after {
+        content: "";
+        width: 2px;
+        top: 20%;
+        bottom: 20%;
+        right: -1.5px;
+        border-radius: 2px;
+        background-color: var(--primary);
+        position: absolute;
+    }
+}
+
+.search .search-icon {
+    margin-right: 4px;
+    height: 36px;
+    line-height: 36px;
+}
+
+.search .search-icon:hover {
+    color: var(--theme);
+    transform: scale(1.1);
+}
+
+.registry {
+    height: 100%;
+    flex: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
 .hidden {
     display: none;
-}
-
-.route:not(.selected):focus,
-.route:not(.selected):hover {
-    font-size: larger !important;
-}
-
-.route::before {
-    content: "";
-    transition: background-color calc(var(--animation-duration) / 2) var(--animation-timingfn);
-    position: absolute;
-    z-index: -1;
-    left: var(--w);
-    top: var(--h);
-    width: calc(100% - 2 * var(--w));
-    height: calc(100% - 2 * var(--h));
-    border-radius: 8px;
-    background-color: #0000;
-}
-
-.route:not(.selected):focus::before,
-.route:not(.selected):hover::before {
-    background-color: var(--secondary);
 }

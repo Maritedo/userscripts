@@ -1,22 +1,21 @@
-const routes = ["home", "about", "help"];
 const mapper = new Map([
     ["home", "主页"],
-    ["about", "关于"],
+    ["explore", "浏览"],
     ["help", "帮助"]
 ]);
+const routes = Array.from(mapper.keys());
 function select_tab(id) {
-    document.querySelectorAll(".route").forEach(item => item.classList.remove('selected'));
-    document.querySelectorAll(".route[to='" + id + "']").forEach(item => item.classList.add('selected'));
-    document.querySelector(".indicator").style.setProperty("--before", routes.indexOf(id) + 1);
+    $(".route", true)
+        .removeClass('selected')
+        .filter(`[to="${id}"]`)
+        .addClass('selected');
+    $(".indicator").css("--before", routes.indexOf(id));
 }
 
 function load_content(id) {
-    let ele = document.querySelector("#content");
-    ele.querySelectorAll(".page").forEach(element => {
-        element.classList.add("hidden");
-    });
-    if ((ele = ele.querySelector(`#page_${id}`)))
-        ele.classList.remove("hidden")
+    let ele = $("#content");
+    $(".page", true, ele.pure).addClass("hidden");
+    $(`#page_${id}`, false, ele.pure).removeClass("hidden");
 }
 
 function push(event) {
@@ -31,119 +30,104 @@ function _push_(id) {
     window.history.pushState({ id }, `${id}`, `#${id}`);
 }
 
-window.onload = () => {
-    document.querySelector(".navigator").addEventListener("click", event => {
-        event.preventDefault();
-        if (event.target.tagName == "A") _push_(event.target.getAttribute("to"))
+$(window)
+    .on("load", event => {
+        $(".navigator").on("click", event => {
+            event.preventDefault();
+            if (event.target.tagName == "A") _push_(event.target.getAttribute("to"))
+        });
+        if (window.location.hash !== "" && routes.includes(window.location.hash.slice(1))) _push_(window.location.hash.slice(1));
+        else _push_("home")
     })
-    if (window.location.hash !== "" && routes.includes(window.location.hash.slice(1))) _push_(window.location.hash.slice(1));
-    else _push_("home")
-}
+    .on("popstate", event => {
+        let stateId = event.currentTarget.location.hash.slice(1);
+        stateId = routes.includes(stateId) ? stateId : "home";
+        select_tab(stateId);
+        load_content(stateId);
+        _push_(stateId)
+    });
 
-window.addEventListener("popstate", event => {
-    let stateId = event.currentTarget.location.hash.slice(1);
-    stateId = routes.includes(stateId) ? stateId : "home";
-    select_tab(stateId);
-    load_content(stateId);
-    _push_(stateId)
-});
+const shadowRange = {
+    from: -30,
+    to: 30
+};
+const rotateRange = {
+    from: -8,
+    to: 8
+};
 
-const shadowRange = 30;
-const rotateRange = 8;
-$(".card").each(element => {
-    const anim = animater(element.pure)
-    const axisX = anim
-        .property("rotateX", {
-            from: -rotateRange,
-            to: rotateRange
-        })
-        .property("shadowX", {
-            from: -shadowRange,
-            to: shadowRange
-        })
-        .group({
-            value: 0.5
-        });
-    const axisY = anim
-        .property("rotateY", {
-            from: -rotateRange,
-            to: rotateRange
-        })
-        .property("shadowY", {
-            from: -shadowRange,
-            to: shadowRange
-        })
-        .group({
-            value: 0.5
-        });
-    const degree = anim
-        .property("degree", {
-            from: 0,
-            to: 360
-        })
-        .group({
-            circle: true
-        });
-    const opacity = anim
-        .property("opacity", {
-            from: 0,
-            to: 0.4
-        })
-        .group();
+const getDegree = (x, y) => {
+    x -= 0.5;
+    y -= 0.5;
+    if (x == 0)
+        return y > 0 ? 0 : 180;
+    else
+        return Math.atan(y / x) * 180 / Math.PI + ((x > 0) ? 90 : 270);
+};
 
-    const myProxy = () => {
-        const rx = axisX.get("rotateX");
-        const ry = axisY.get("rotateY");
-        const sx = axisX.get("shadowX");
-        const sy = axisY.get("shadowY");
-        const dg = degree.get("degree");
-        const op = opacity.get("opacity");
-        element
-            .style("transform", `rotateX(${-rx}deg) rotateY(${ry}deg)`)
-            .style("boxShadow", `${sx}px ${sy}px 20px -10px rgba(0, 0, 0, 0.6)`)
-            .css("--deg", dg + "deg")
-            .css("--opacity", op);
-    };
-    anim.proxy(myProxy);
-    myProxy();
-    const reset = () => {
-        axisX.reset();
-        axisY.reset();
-        degree.reset();
-        opacity.reset();
-    };
-    element
-        .on("mouseenter touchstart", event => {
+$(document)
+    .on("DOMContentLoaded", e => {
+        $(".card").each(element => {
+            const anim = animater(element.pure)
+            const axisX = anim
+                .property("rotateX", rotateRange)
+                .property("shadowX", shadowRange)
+                .group({ value: 0.5 });
+            const axisY = anim
+                .property("rotateY", rotateRange)
+                .property("shadowY", shadowRange)
+                .group({ value: 0.5 });
+            const degree = anim
+                .property("degree", { from: 0, to: 360 })
+                .group({ circle: true });
+            const opacity = anim
+                .property("opacity", { from: 0, to: 0.25 })
+                .group();
 
-        })
-        .on("mousemove  touchmove", event => {
-            const boundingRect = element.pure.getBoundingClientRect();
+            const payload = () => {
+                const rx = axisX.get("rotateX");
+                const ry = axisY.get("rotateY");
+                const sx = axisX.get("shadowX");
+                const sy = axisY.get("shadowY");
+                const dg = degree.get("degree");
+                const op = opacity.get("opacity");
+                element
+                    .style("transform", `rotateX(${-rx}deg) rotateY(${ry}deg)`)
+                    .style("boxShadow", `${sx}px ${sy}px 20px -10px rgba(0, 0, 0, 0.6)`)
+                    .css("--deg", dg + "deg")
+                    .css("--opacity", op);
+            };
+            anim.proxy(payload);
+            const reset = () => {
+                axisX.reset();
+                axisY.reset();
+                opacity.reset();
+            };
+            // const box = refSize(element.pure).box;
+            element
+                .on("mouseenter", event => {
+                    const box = element.pure.getBoundingClientRect();
+                    const x = (event.clientX - box.x) / box.width;
+                    const y = (event.clientY - box.y) / box.height;
 
-            const offsetX = event.clientX - boundingRect.left;
-            const offsetY = event.clientY - boundingRect.top;
+                    degree.set(getDegree(x, y) / 360);
+                })
+                .on("mousemove", event => {
+                    const box = element.pure.getBoundingClientRect();
+                    const percentX = (event.clientX - box.x) / box.width;
+                    const percentY = (event.clientY - box.y) / box.height;
+                    const x = percentX - 0.5;
+                    const y = percentY - 0.5;
+                    axisX.go(percentX);
+                    axisY.go(percentY);
+                    degree.go(getDegree(percentX, percentY) / 360);
+                    opacity.go(keepInside(0, Math.sqrt(4 * (x ** 2 + y ** 2)), 1));
+                })
+                .on("mouseleave", event => {
+                    reset();
+                });
 
-            const percentX = offsetX / boundingRect.width;
-            const percentY = offsetY / boundingRect.height;
-
-            const x = percentX - 0.5;
-            const y = percentY - 0.5;
-
-            let deg;
-            if (x == 0) {
-                deg = y > 0 ? 0 : 180;
-            }
-            else {
-                deg = Math.atan(y / x) * 180 / Math.PI + ((x > 0) ? 90 : 270);
-            }
-
-            axisX.go(percentX);
-            axisY.go(percentY);
-            degree.go(deg / 360);
-            opacity.go(keepInside(0, Math.sqrt(4 * (x ** 2 + y ** 2)), 1));
-        })
-        .on("mouseleave touchend", event => {
             reset();
+            payload();
         });
-
-    reset();
-});
+    });

@@ -5,8 +5,8 @@
 }
 
 .card {
-    user-select: none;
     -webkit-user-select: none;
+    user-select: none;
     display: flex;
     flex-direction: column;
     transition: none;

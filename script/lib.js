@@ -26,10 +26,15 @@ function $(selector, cache = false, env = document) {
             element = env.querySelectorAll(selector);
             CACHE.set({ selector, env }, element);
         }
+        element = Array.from(element);
     }
     else if (selector instanceof Element) {
         TYPE = ElementType.ELEMENT;
         element = [selector];
+    }
+    else if (selector instanceof Array) {
+        TYPE = ElementType.ELEMENT;
+        element = selector;
     }
     else if (selector === null) {
         return null;
@@ -123,17 +128,26 @@ function $(selector, cache = false, env = document) {
         return then;
     }
 
-    function append(ls) {
+    function append(...ls) {
         element.push(...ls);
     }
 
     function query(selector, cache = false) {
         let res;
         forEvery(e => {
-            if (res) res.append($(selector, cache, e).eles);
+            if (res) res.append(...$(selector, cache, e).eles);
             else res = $(selector, cache, e);
         })
         return res;
+    }
+
+    function filter(selector) {
+        let res = [];
+        forEvery(e => {
+            if (e.matches(selector))
+                res.push(e)
+        });
+        return $(res);
     }
 
     const then = {
@@ -145,9 +159,10 @@ function $(selector, cache = false, env = document) {
         addClass,
         removeClass,
         hasClass,
-        each: (fn) => forEvery(e => fn($(e))),
+        each: (fn) => (forEvery(e => fn($(e))), then),
         append,
         query,
+        filter,
         prop,
         attr,
         css,
@@ -164,4 +179,34 @@ function $(selector, cache = false, env = document) {
     /**
      * 假定使用者不会傻到在$(document)或$(window)上尝试使用addClass之类的方法
      */
+}
+
+function refSize(element, callback = null) {
+    const boundingBox = element.getBoundingClientRect();
+    const res = {
+        width: boundingBox.width,
+        height: boundingBox.height,
+        top: boundingBox.top,
+        right: boundingBox.right,
+        left: boundingBox.left,
+        bottom: boundingBox.bottom,
+        x: boundingBox.x,
+        y: boundingBox.y
+    };
+    const resizeObserver = new ResizeObserver(entries => {
+        console.log(entries);
+        ({
+            width: res.width,
+            height: res.height,
+            top: res.top,
+            right: res.right,
+            left: res.left,
+            bottom: res.bottom,
+            x: res.x,
+            y: res.y
+        } = entries[0].contentRect);
+        callback && callback();
+    });
+    resizeObserver.observe(element);
+    return { box: res, stop: resizeObserver.disconnect };
 }

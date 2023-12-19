@@ -5,7 +5,7 @@ function animater(element) {
 class Animater {
     /** @type {{duration: number, timing: (value: number) => number, circle: boolean, value: number }} */
     static defaultOptions = {
-        duration: 1000,
+        duration: 600,
         timing: Animater.easeOutQuint,
         circle: false,
         value: 0
@@ -21,7 +21,7 @@ class Animater {
     /** @type {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number, completed: boolean }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }[]} */
     propertyGroups = [];
     /** @type {(()=>any)[]} */
-    proxies = [];
+    payloads = [];
     /** @type {boolean} */
     lock = false;
 
@@ -55,7 +55,7 @@ class Animater {
                 if (prop.circle) {
                     const route1 = states.target - states.start;
                     const delta = Math.abs(route1);
-                    const route2 = (states.target - states.start) > 0 ? (delta - 1) : (1 - delta);
+                    const route2 = route1 > 0 ? (delta - 1) : (1 - delta);
                     const route = delta < 0.5 ? route1 : route2;
                     states.current = (1 + states.start + route * prop.timing(offsetTime)) % 1;
                 } else {
@@ -65,28 +65,27 @@ class Animater {
             for (const key of prop.values.keys()) {
                 const values = prop.values.get(key);
                 const { from, to } = values;
-                const next = from + (to - from) * states.current;
-                values.value = next;
+                values.value = from + (to - from) * states.current;
             }
         }
         if (completed) this.lock = false;
         else {
-            this.proxies.forEach(e => e(this.propertyGroups));
+            this.payloads.forEach(e => e(this.propertyGroups));
             requestAnimationFrame(() => this.onTick());
         }
     }
 
-    proxy(callback) {
-        this.proxies.push(callback);
+    proxy(payload) {
+        this.payloads.push(payload);
         return this;
     }
 
     unregistryProxy(callback) {
         const re = [];
-        this.proxies.forEach(e => {
-            if (e !== callback) re.push(e)
+        this.payloads.forEach(e => {
+            if (e !== callback) re.push(e);
         });
-        this.proxies = re;
+        this.payloads = re;
     }
 
     /**
@@ -110,10 +109,14 @@ class Animater {
             }
             return then;
         }
+        const set = (value) => {
+            propGroup.states.completed = true;
+            propGroup.states.current = propGroup.states.start = propGroup.states.current = value;
+            propGroup.states.pad = 0;
+        }
         const reset = () => go(defaultVal);
         const get = (keyName) => propGroup.values.get(keyName).value;
-        then = { go, reset, get };
-        return then;
+        return (then = { go, set, reset, get });
     }
 
     property(prop, options) {

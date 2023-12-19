@@ -1,0 +1,74 @@
+body,
+html,
+.wrapper {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #333;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 600px;
+}
+
+.cube {
+    --rotate-x: -30deg;
+    --rotate-y: 45deg;
+    position: relative;
+    width: 200px;
+    height: 200px;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+}
+
+.controller {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.face {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    --gos: blur(4px);
+    -webkit-backdrop-filter: var(--gos);
+    backdrop-filter: var(--gos);
+}
+
+.front {
+    background-color: rgba(255, 0, 0, 0.7);
+    transform: translateZ(100px);
+}
+
+.back {
+    background-color: rgba(0, 255, 255, 0.7);
+    transform: rotateY(180deg) translateZ(100px);
+}
+
+.left {
+    background-color: rgba(0, 255, 0, 0.7);
+    transform: rotateY(-90deg) translateZ(100px);
+}
+
+.right {
+    background-color: rgba(255, 0, 255, 0.7);
+    transform: rotateY(90deg) translateZ(100px);
+}
+
+.top {
+    background-color: rgba(0, 0, 255, 0.7);
+    transform: rotateX(90deg) translateZ(100px);
+}
+
+.bottom {
+    background-color: rgba(255, 255, 0, 0.7);
+    transform: rotateX(-90deg) translateZ(100px);
+}
