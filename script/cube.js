@@ -1,4 +1,4 @@
-const duration = 300;
+const duration = 1000;
 
 $(window).on("load", function () {
     let lock = true;
@@ -15,7 +15,7 @@ $(window).on("load", function () {
         .group({ value: 0.25, duration });
     const LeftNRight = ANIME
         .property("rotateY", { from: -180, to: 180 })
-        .group({ circle: true, value: 0.125, duration });
+        .group({ circle: true, value: 0.625, duration });
     ANIME.proxy(props => {
         const x = UpNDown.get("rotateX");
         const y = LeftNRight.get("rotateY");
@@ -31,13 +31,15 @@ $(window).on("load", function () {
     function onMove(evt) {
         const { x, y } = getCord(evt);
         LeftNRight.go((x - startX) / 300);
-        UpNDown.go((startY - y) / 300);
+        UpNDown.go((startY - y) / 100);
     }
     function onEnd(evt) {
         lock = true;
         LeftNRight.unstore();
         UpNDown.unstore();
     }
+    UpNDown.reset();
+    LeftNRight.reset();
 });
 const getCord = (evt) => {
     return { x: evt.offsetX, y: evt.offsetY };

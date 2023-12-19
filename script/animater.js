@@ -14,7 +14,7 @@ class Animater {
     static defaultMeta = {
         from: 0,
         to: 1,
-        value: 0
+        value: null
     };
     /** @type {Element} */
     element;
@@ -37,8 +37,10 @@ class Animater {
             if (states.flag) {
                 states.flag = false;
                 states.tick.start = states.tick.last;
-                if (prop.circle) {
-                    states.start = states.current = getFixed(states.current);
+                if (!prop.circle) {
+                    states.target = keepInside(0, states.newValue, 1);
+                } else if (!prop.states.isContinous) {
+                    states.current = getFixed(states.current);
                     const target = getFixed(states.newValue);
                     const distance = Math.abs(states.start - target);
                     if (distance > 0.5)
@@ -46,10 +48,9 @@ class Animater {
                     else
                         states.target = target;
                 } else {
-                    states.start = states.current;
-                    states.target = keepInside(0, states.newValue, 1);
+                    states.target = states.newValue;
                 }
-                states.pad = states.target - states.start;
+                states.start = states.current;
             }
             // 记录时刻
             const tick = Date.now();
@@ -57,20 +58,23 @@ class Animater {
             // 标记并跳过已完成项目
             if (states.completed) continue;
             else if (states.current == states.target) {
+                states.start = states.target;
                 states.completed = true;
                 continue;
             }
             // 处理仍需处理的项目
             completed = false;
             // 计算偏移值
-            const offset = (states.target - states.start) / (states.target - states.current);
-            const offsetTime = Math.min(1, (tick - states.tick.start) / prop.duration);
-            if (Math.abs(offset) < 0.01) {
-                if (prop.circle) states.target %= 1
+            const offset = (states.target - states.current) / (states.target - states.start);
+            if (Math.abs(offset) <= 0.001) {
+                if (prop.circle && !states.isContinous) states.target %= 1
                 states.current = states.start = states.target;
+                // states.pad = 0;
             }
-            else
+            else {
+                const offsetTime = Math.min(1, (tick - states.tick.start) / prop.duration);
                 states.current = states.start + states.pad * prop.timing(offsetTime);
+            }
             for (const values of prop.values.values()) {
                 const { from, to } = values;
                 if (prop.circle)
@@ -79,12 +83,7 @@ class Animater {
                     values.value = from + (to - from) * states.current;
             }
         }
-        if (completed) {
-            this.lock = false;
-            for (const prop of this.propertyGroups) {
-                prop.states.start = prop.states.target;
-            }
-        }
+        if (completed) this.lock = false;
         else {
             this.payloads.forEach(e => e(this.propertyGroups));
             requestAnimationFrame(() => this.onTick());
@@ -112,14 +111,13 @@ class Animater {
         let then;
         const go = (value) => {
             if (propGroup.states.target != value) {
-                if (propGroup.states.isContinous) {
-                    value += propGroup.states.checkPoint
-                }
+                if (propGroup.states.isContinous)
+                    value += propGroup.states.checkPoint;
                 propGroup.states.completed = false;
                 if (!this.lock) {
                     this.lock = true;
                     propGroup.states.tick.last = propGroup.states.tick.start = Date.now();
-                    propGroup.states.pad = (propGroup.states.target = value) - propGroup.states.start;
+                    propGroup.states.target = value;
                     this.onTick();
                 } else {
                     propGroup.states.newValue = value;
@@ -135,16 +133,24 @@ class Animater {
         }
         const unstore = () => {
             propGroup.states.isContinous = false;
+            // if (this.lock) {
+            //     propGroup.states.requireClean = true;
+            //     console.log("wait")
+            // } else {
+            //     propGroup.states.target = getFixed(propGroup.states.target);
+            //     propGroup.states.current = getFixed(propGroup.states.current);
+            //     propGroup.states.start = getFixed(propGroup.states.start);
+            //     console.log("instant")
+            // }
             return then;
         }
         const set = (value) => {
             propGroup.states.completed = true;
             propGroup.states.target = propGroup.states.start = propGroup.states.target = value;
-            propGroup.states.pad = 0;
         }
         const reset = () => go(defaultVal);
         const get = (keyName) => propGroup.values.get(keyName).value;
-        return (then = { go, set, store, unstore, reset, get });
+        return (then = { go, set, get, reset, store, unstore });
     }
 
     property(prop, options) {
@@ -152,13 +158,17 @@ class Animater {
         const _animater_ = this;
         const group = (options) => {
             const { timing, duration, circle, value } = Object.assign({}, Animater.defaultOptions, options);
+            for (const values of props.values()) {
+                const { from, to } = values;
+                values.value = from + (to - from) * value;
+            }
             const propGroup = {
                 states: {
                     tick: {
                         last: 0,
                         start: 0
                     },
-                    pad: 0,
+                    get pad() { return this.target - this.start },
                     flag: false,
                     start: value,
                     target: value,
@@ -166,7 +176,8 @@ class Animater {
                     newValue: 0,
                     completed: true,
                     checkPoint: value,
-                    isContinous: false
+                    isContinous: false,
+                    // requireClean: false
                 },
                 values: props,
                 timing,
