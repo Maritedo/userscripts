@@ -48,8 +48,8 @@ $(window)
     });
 
 const shadowRange = {
-    from: -30,
-    to: 30
+    from: -20,
+    to: 20
 };
 const rotateRange = {
     from: -8,
@@ -93,7 +93,7 @@ $(document)
                 const op = opacity.get("opacity");
                 element
                     .style("transform", `rotateX(${-rx}deg) rotateY(${ry}deg)`)
-                    .style("boxShadow", `${sx}px ${sy}px 20px -10px rgba(0, 0, 0, 0.6)`)
+                    .style("boxShadow", `${sx}px ${sy}px 14px -7px rgba(0, 0, 0, 0.6)`)
                     .css("--deg", dg + "deg")
                     .css("--opacity", op);
             };
@@ -121,7 +121,7 @@ $(document)
                     axisX.go(percentX);
                     axisY.go(percentY);
                     degree.go(getDegree(percentX, percentY) / 360);
-                    opacity.go(keepInside(0, Math.sqrt(4 * (x ** 2 + y ** 2)), 1));
+                    opacity.go(Math.sqrt(4 * (x ** 2 + y ** 2)));
                 })
                 .on("mouseleave", event => {
                     reset();

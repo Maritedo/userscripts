@@ -1,7 +1,8 @@
-@import url("/style/theme.css");
-@import url("/style/app.css");
-@import url("/style/home.css");
-@import url("/style/about.css");
-@import url("/style/help.css");
-@import url("/style/modal.css");
-@import url("/style/msger.css");
+@import url("../style/theme.css");
+@import url("../style/app.css");
+@import url("../style/home.css");
+@import url("../style/about.css");
+@import url("../style/help.css");
+@import url("../style/modal.css");
+@import url("../style/msger.css");
+@import url("../style/cube.css");

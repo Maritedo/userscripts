@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UserJS</title>
-    <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet" href="./style/index.css">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <base target="_blank" />
@@ -76,59 +76,103 @@
                 </div>
             </span>
         </header>
-        <div class="none"></div>
         <section id="content" class="content">
-            <div class="content-wrapper">
-                <div class="page hidden" id="page_home">
-                    <p style="width: 100%; text-align: center;">
-                        主页·未制作
-                    </p>
+            <div class="page hidden" id="page_home">
+                <div class="cube-wrapper">
+                    <div class="cube">
+                        <div class="cube-face cube-front"></div>
+                        <div class="cube-face cube-back"></div>
+                        <div class="cube-face cube-left"></div>
+                        <div class="cube-face cube-right"></div>
+                        <div class="cube-face cube-top"></div>
+                        <div class="cube-face cube-bottom"></div>
+                    </div>
+                    <div class="cube-controller"></div>
                 </div>
-                <div class="page hidden" id="page_explore">
-                    <div class="card-container">
-                        <div class="card">
-                            <img src="/images/img1.webp">
-                            <div class="card-content">
-                                <p class="card-title">
-                                    文章1标题
-                                </p>
-                                <p class="card-info">
-                                    文章1介绍/文章概要
-                                </p>
-                            </div>
-                            <div class="card-footer">
-                                <a class="link" href="#">操作</a>
-                            </div>
+            </div>
+            <div class="page hidden" id="page_explore">
+                <div class="card-container">
+                    <div class="card">
+                        <img src="./images/img1.webp">
+                        <div class="card-content">
+                            <p class="card-title">
+                                LET&nbsp;ME&nbsp;DOWNload&nbsp;it.js
+                            </p>
+                            <p class="card-info">
+                                解除小雅资源下载限制。
+                            </p>
                         </div>
-                        <div class="card">
-                            <img src="/images/img1.webp">
-                            <div class="card-content">
-                                <p class="card-title">
-                                    文章2标题
-                                </p>
-                                <p class="card-info">
-                                    文章2介绍/文章概要
-                                </p>
-                            </div>
-                            <div class="card-footer">
-                                <a class="link" href="#">操作1</a>
-                                <a class="link" href="#">操作2</a>
-                            </div>
+                        <div class="card-footer">
+                            <a class="link" href="/userjs/LET ME DOWNload it!.min.user.js">安装</a>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <img src="./images/img1.webp">
+                        <div class="card-content">
+                            <p class="card-title">
+                                链接管理
+                            </p>
+                            <p class="card-info">
+                                阻止搜索引擎的重定向，直达目标网址。<br>
+                                已修复原脚本一个微小的bug。<br>
+                                原作者：<a href="https://github.com/AirBashX/">AirBash</a>
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a class="link" href="/userjs/LinkManager.user.js">安装</a>
+                            <a class="link" href="https://github.com/AirBashX/UserScript">主页</a>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <img src="./images/img1.webp">
+                        <div class="card-content">
+                            <p class="card-title">
+                                Bili Evovled
+                            </p>
+                            <p class="card-info">
+                                一个B站脚本管理器。<br>
+                                通过丰富的组件库高度自定义你的Bilibili体验。<br>
+                                原作者：<a href="https://github.com/the1812">Grant Howard</a>
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a class="link" href="/userjs/BiliEvovledPreview.user.js">安装</a>
+                            <a class="link"
+                                href="https://raw.githubusercontent.com/the1812/Bilibili-Evolved/preview/dist/bilibili-evolved.preview.user.js">最新</a>
+                            <a class="link" href="https://github.com/the1812/Bilibili-Evolved">主页</a>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <img src="./images/img1.webp">
+                        <div class="card-content">
+                            <p class="card-title">
+                                Github中文化插件
+                            </p>
+                            <p class="card-info">
+                                汉化Github网站<br>
+                                原作者：<a href="https://maboloshi.github.io/Blog">沙漠之子</a>
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a class="link" href="/userjs/GithubChinese.user.js">安装</a>
+                            <a class="link"
+                                href="https://update.greasyfork.org/scripts/435208/GitHub%20%E4%B8%AD%E6%96%87%E5%8C%96%E6%8F%92%E4%BB%B6.user.js">最新</a>
+                            <a class="link" href="https://github.com/maboloshi/github-chinese">主页</a>
                         </div>
                     </div>
                 </div>
-                <div class="page hidden" id="page_help">
-                    <p style="width: 100%; text-align: center;">
-                        栏目三·未制作
-                    </p>
-                </div>
+            </div>
+            <div class="page hidden" id="page_help">
+                <p style="width: 100%; text-align: center;">
+                    栏目三·未制作
+                </p>
             </div>
         </section>
     </div>
     <dialog class="modal hidden">
         <div class="modal-container">
             <div class="modal-header">
-                <p class="h-main">注册(仅样式无功能)</p>
+                <p class="h-main">旧用户注册</p>
                 <p class="h-sub">请依次输入所需信息</p>
                 <span onclick="regsitryClose()" class="material-symbols-rounded icon close-button">
                     close
@@ -166,7 +210,12 @@
                             <button class="input-next">NEXT</button>
                         </div>
                         <div class="input-section others">
-                            <button class="input-next">永远到达不了注册成功的真实</button>
+                            <button class="input-next submit">
+                                <span class="material-symbols-rounded">
+                                    done
+                                </span>
+                                <p>注册成功了...吗？</p>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -174,10 +223,11 @@
         </div>
     </dialog>
 </body>
-<script src="script/lib.js"></script>
-<script src="script/animater.js"></script>
-<script src="script/checkrules.js"></script>
-<script src="script/main.js"></script>
+<script src="./script/lib.js"></script>
+<script src="./script/animater.js"></script>
+<script src="./script/checkrules.js"></script>
+<script src="./script/main.js"></script>
+<script src="./script/cube.js"></script>
 <script>
     const classes = ["first", "second", "third", "others"];
 

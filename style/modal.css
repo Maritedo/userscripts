@@ -243,8 +243,25 @@
     border-radius: 0 0 var(--radius) 0;
 }
 
+.submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.submit > * {
+    color: var(--color-reverse);
+    display: inline;
+}
+
+.input-next:focus,
+.input-next:hover,
+.input-next.submit:focus > *,
+.input-next.submit:hover > * {
+    color: var(--theme-contrast);
+}
+
 .input-next:focus,
 .input-next:hover {
     background-color: var(--theme-2);
-    color: var(--theme-contrast);
 }

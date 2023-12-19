@@ -2,6 +2,7 @@
     :root {
         --primary: #3f3f3f;
         --secondary: rgb(43, 43, 43);
+        --blur: rgba(43, 43, 43, 0.6);
         --color: #fff;
         --color-reverse: #000;
         --shadow-1: 0 2px 16px -12px rgba(93, 93, 93, 0.5);
@@ -20,6 +21,7 @@
     :root {
         --primary: #dedede;
         --secondary: rgb(255, 255, 255);
+        --blur: rgba(255, 255, 255, 0.6);
         --color: #000;
         --color-reverse: #fff;
         --shadow-1: 0 2px 16px -8px rgba(0, 0, 0, .8);
