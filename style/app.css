@@ -25,6 +25,7 @@ html,
     position: fixed;
     height: var(--header-height);
     width: 100%;
+    min-width: 300px;
     padding: 0 10px;
     display: flex;
     flex-direction: row;
@@ -51,18 +52,24 @@ html,
 
 .wrapper::-webkit-scrollbar {
     width: 8px;
+    height: 8px;
     background-color: var(--primary);
 }
 
 .wrapper::-webkit-scrollbar-track {
+    margin: 4px;
     margin-top: calc(4px + var(--header-height));
-    margin-bottom: 4px;
 }
 
 .wrapper::-webkit-scrollbar-thumb {
     width: 4px;
+    height: 4px;
     background-color: #666f;
     border-radius: calc(4px);
+}
+
+.wrapper::-webkit-scrollbar-corner {
+    background-color: var(--primary);
 }
 
 .navigator {
@@ -97,6 +104,7 @@ html,
     color: var(--theme);
     text-align: center;
     text-decoration: none;
+    text-wrap: nowrap;
     outline: none;
     position: relative;
     z-index: 0;
