@@ -220,5 +220,5 @@ const MODE = {
     TOUCH: 0,
     MOUSE: 1,
     NONE: -1,
-    GET: (evt) => evt.type.startsWith("mouse") > -1 ? MODE.MOUSE : MODE.TOUCH
+    GET: (evt) => evt.type.startsWith("mouse") ? MODE.MOUSE : MODE.TOUCH
 };

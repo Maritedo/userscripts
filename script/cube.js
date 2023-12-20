@@ -46,8 +46,8 @@ $(window).on("load", function () {
         UpNDown.store();
     }
     function onMove(evt) {
-        evt.preventDefault();
         if (mode !== MODE.GET(evt)) return;
+        evt.preventDefault();
         const { x, y } = getCord(evt, mode);
         LeftNRight.go((x - startX) / 300);
         UpNDown.go((startY - y) / 100);
