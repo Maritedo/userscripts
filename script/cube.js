@@ -1,4 +1,6 @@
 const duration = 1000;
+const vertical = 90;
+const horizon = 180;
 
 $(window).on("load", function () {
     let lock = true;
@@ -6,15 +8,15 @@ $(window).on("load", function () {
     const main = $(".wrapper");
     const cube = main.query(".cube");
     main
-        .on("mousedown", onStart)
-        .on("mousemove", evt => !lock && onMove(evt))
-        .on("mouseup", onEnd);
+        .on("mousedown touchstart", onStart)
+        .on("mousemove touchmove", evt => !lock && onMove(evt))
+        .on("mouseup   touchend", onEnd);
     const ANIME = animater(cube.pure);
     const UpNDown = ANIME
-        .property("rotateX", { from: -60, to: 60 })
+        .property("rotateX", { from: -vertical, to: vertical })
         .group({ value: 0.25, duration });
     const LeftNRight = ANIME
-        .property("rotateY", { from: -180, to: 180 })
+        .property("rotateY", { from: -horizon, to: horizon })
         .group({ circle: true, value: 0.625, duration });
     ANIME.proxy(props => {
         const x = UpNDown.get("rotateX");
@@ -29,6 +31,7 @@ $(window).on("load", function () {
         UpNDown.store();
     }
     function onMove(evt) {
+        evt.preventDefault();
         const { x, y } = getCord(evt);
         LeftNRight.go((x - startX) / 300);
         UpNDown.go((startY - y) / 100);
@@ -42,5 +45,8 @@ $(window).on("load", function () {
     LeftNRight.reset();
 });
 const getCord = (evt) => {
-    return { x: evt.offsetX, y: evt.offsetY };
+    if(evt.type.indexOf("touch") >= 0) {
+        evt = evt.touches[0];
+    }
+    return { x: evt.clientX, y: evt.clientY };
 }
