@@ -136,9 +136,9 @@ $(document)
                         onStart(event.clientX, event.clientY)
                 })
                 .on("mousemove  touchmove", event => {
+                    if (mode !== MODE.NONE) event.preventDefault();
                     if (mode !== MODE.GET(event)) return;
                     if (event.type === "touchmove") {
-                        event.preventDefault();
                         onMove(event.touches[0].clientX, event.touches[0].clientY);
                     }
                     else
