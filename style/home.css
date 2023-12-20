@@ -54,10 +54,10 @@
 @media (prefers-color-scheme: light) {
     .card::after {
         background: linear-gradient(var(--deg),
-                rgba(0, 0, 0, calc(0.1 * var(--opacity))) 0%,
-                rgba(31, 31, 31, calc(0.2 * var(--opacity))) 33%,
-                rgba(223, 223, 223, calc(0.3 * var(--opacity))) 67%,
-                rgba(255, 255, 255, calc(0.4 * var(--opacity))) 100%)
+                rgba(0, 0, 0, calc(.25 * var(--opacity))) 0%,
+                rgba(31, 31, 31, calc(.50 * var(--opacity))) 33%,
+                rgba(223, 223, 223, calc(.75 * var(--opacity))) 67%,
+                rgba(255, 255, 255, calc(1.0 * var(--opacity))) 100%)
     }
 }
 
