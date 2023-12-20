@@ -10,10 +10,20 @@ $(window).on("load", function () {
     let startX, startY;
     const main = $(".cube-wrapper");
     const cube = main.query(".cube");
-    main
+    const ctlr = main.query(".cube-controller");
+    const disp = main.query(".disp");
+    const opac = main.query("#opacity");
+    disp.text(Number(opac.pure.value).toFixed(2));
+    ctlr
         .on("mousedown touchstart", onStart)
         .on("mousemove touchmove", evt => mode !== MODE.NONE && onMove(evt))
         .on("mouseup   touchend", onEnd);
+    opac
+        .on("input", evt => {
+            const value = evt.target.value;
+            cube.css("--alpha", value);
+            disp.text(Number(value).toFixed(2));
+        });
     const ANIME = animater(cube.pure);
     const UpNDown = ANIME
         .property("rotateX", { from: -vertical, to: vertical })

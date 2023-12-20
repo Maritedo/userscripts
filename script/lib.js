@@ -150,6 +150,10 @@ function $(selector, cache = false, env = document) {
         return $(res);
     }
 
+    function text(text) {
+        return (forEvery(ele => ele.textContent = text, then))
+    }
+
     const then = {
         log,
         remove,
@@ -167,6 +171,7 @@ function $(selector, cache = false, env = document) {
         attr,
         css,
         style,
+        text,
         eles: element,
         get ele() { return $(element[0]) },
         get pure() { return element[0] },

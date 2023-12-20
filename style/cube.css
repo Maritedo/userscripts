@@ -26,12 +26,6 @@
     transition: none;
 }
 
-.cube-controller {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
 .cube-face {
     position: absolute;
     width: 200px;
@@ -68,4 +62,33 @@
 .cube-bottom {
     background-color: rgba(255, 255, 0, var(--alpha));
     transform: rotateX(-90deg) translateZ(100px);
+}
+
+.cube-controller {
+    z-index: 1;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.cube-wrapper .configure {
+    z-index: 2;
+    position: absolute;
+    bottom: 10px;
+    background-color: var(--blur);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    padding: 4px 12px;
+    flex: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+}
+
+.configure .disp {
+    flex: 1;
+    width: 3em;
+    display: inline-block;
+    text-align: left;
 }
