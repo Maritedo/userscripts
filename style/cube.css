@@ -12,7 +12,7 @@
 .cube {
     --rotate-x: -30deg;
     --rotate-y: 45deg;
-    --alpha: 0.4;
+    --alpha: 0.7;
     --gos: blur(8px);
     position: relative;
     width: 200px;

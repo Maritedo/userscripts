@@ -14,7 +14,7 @@ $(window).on("load", function () {
     const ANIME = animater(cube.pure);
     const UpNDown = ANIME
         .property("rotateX", { from: -vertical, to: vertical })
-        .group({ value: 0.25, duration });
+        .group({ value: 0.375, duration });
     const LeftNRight = ANIME
         .property("rotateY", { from: -horizon, to: horizon })
         .group({ circle: true, value: 0.625, duration });
@@ -40,6 +40,7 @@ $(window).on("load", function () {
         lock = true;
         LeftNRight.unstore();
         UpNDown.unstore();
+        UpNDown.reset();
     }
     UpNDown.reset();
     LeftNRight.reset();
