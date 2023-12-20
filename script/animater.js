@@ -57,7 +57,7 @@ class Animater {
             states.tick.last = tick;
             // 标记并跳过已完成项目
             if (states.completed) continue;
-            else if (states.current == states.target) {
+            if (states.current == states.target) {
                 states.start = states.target;
                 states.completed = true;
                 continue;
@@ -66,10 +66,9 @@ class Animater {
             completed = false;
             // 计算偏移值
             const offset = (states.target - states.current) / (states.target - states.start);
-            if (Math.abs(offset) <= 0.001) {
+            if (Math.abs(offset) <= 0.000001) {
                 if (prop.circle && !states.isContinous) states.target %= 1
                 states.current = states.start = states.target;
-                // states.pad = 0;
             }
             else {
                 const offsetTime = Math.min(1, (tick - states.tick.start) / prop.duration);
@@ -127,21 +126,12 @@ class Animater {
             return then;
         }
         const store = () => {
-            propGroup.states.checkPoint = propGroup.states.current;
+            propGroup.states.checkPoint = propGroup.states.target;
             propGroup.states.isContinous = true;
             return then;
         }
         const unstore = () => {
             propGroup.states.isContinous = false;
-            // if (this.lock) {
-            //     propGroup.states.requireClean = true;
-            //     console.log("wait")
-            // } else {
-            //     propGroup.states.target = getFixed(propGroup.states.target);
-            //     propGroup.states.current = getFixed(propGroup.states.current);
-            //     propGroup.states.start = getFixed(propGroup.states.start);
-            //     console.log("instant")
-            // }
             return then;
         }
         const set = (value) => {
