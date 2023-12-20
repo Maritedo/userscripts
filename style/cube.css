@@ -4,6 +4,7 @@
     height: 100%;
     width: 100%;
     display: flex;
+    position: relative;
     justify-content: center;
     align-items: center;
     perspective: 500px;

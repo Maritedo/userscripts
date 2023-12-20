@@ -48,12 +48,12 @@ $(window)
     });
 
 const shadowRange = {
-    from: -20,
-    to: 20
+    from: 20,
+    to: -20
 };
 const rotateRange = {
-    from: -8,
-    to: 8
+    from: 8,
+    to: -8
 };
 
 const getDegree = (x, y) => {
@@ -68,6 +68,7 @@ const getDegree = (x, y) => {
 $(document)
     .on("DOMContentLoaded", e => {
         $(".card").each(element => {
+            let mode = MODE.NONE;
             const anim = animater(element.pure)
             const axisX = anim
                 .property("rotateX", rotateRange)
@@ -78,7 +79,7 @@ $(document)
                 .property("shadowY", shadowRange)
                 .group({ value: 0.5 });
             const degree = anim
-                .property("degree", { from: 0, to: 360 })
+                .property("degree", { from: -180, to: 180 })
                 .group({ circle: true });
             const opacity = anim
                 .property("opacity", { from: 0, to: 0.25 })
@@ -94,8 +95,8 @@ $(document)
                 element
                     .style("transform", `rotateX(${-rx}deg) rotateY(${ry}deg)`)
                     .style("boxShadow", `${sx}px ${sy}px 14px -7px rgba(0, 0, 0, 0.6)`)
-                    .css("--deg", dg + "deg")
-                    .css("--opacity", op);
+                    .css("--opacity", op)
+                    .css("--deg", dg + "deg");
             };
             anim.proxy(payload);
             const reset = () => {
@@ -104,29 +105,50 @@ $(document)
                 opacity.reset();
             };
             // const box = refSize(element.pure).box;
-            element
-                .on("mouseenter", event => {
-                    const box = element.pure.getBoundingClientRect();
-                    const x = (event.clientX - box.x) / box.width;
-                    const y = (event.clientY - box.y) / box.height;
 
-                    degree.set(getDegree(x, y) / 360);
+            const onStart = (cordX, cordY) => {
+                const box = element.pure.getBoundingClientRect();
+                const x = (cordX - box.x) / box.width;
+                const y = (cordY - box.y) / box.height;
+
+                degree.set(getDegree(x, y) / 360);
+            };
+            const onMove = (cordX, cordY) => {
+                const box = element.pure.getBoundingClientRect();
+                const percentX = (cordX - box.x) / box.width;
+                const percentY = (cordY - box.y) / box.height;
+                const x = percentX - 0.5;
+                const y = percentY - 0.5;
+                axisX.go(percentX);
+                axisY.go(percentY);
+                degree.go(getDegree(percentX, percentY) / 360);
+                opacity.go(Math.sqrt(4 * (x ** 2 + y ** 2)));
+            };
+            element
+                .on("mouseenter touchstart", event => {
+                    if (mode === MODE.NONE) mode = MODE.GET(event);
+                    else return;
+                    if (event.type === "touchstart") {
+                        event.preventDefault();
+                        onStart(event.touches[0].clientX, event.touches[0].clientY);
+                    }
+                    else
+                        onStart(event.clientX, event.clientY)
                 })
-                .on("mousemove", event => {
-                    const box = element.pure.getBoundingClientRect();
-                    const percentX = (event.clientX - box.x) / box.width;
-                    const percentY = (event.clientY - box.y) / box.height;
-                    const x = percentX - 0.5;
-                    const y = percentY - 0.5;
-                    axisX.go(percentX);
-                    axisY.go(percentY);
-                    degree.go(getDegree(percentX, percentY) / 360);
-                    opacity.go(Math.sqrt(4 * (x ** 2 + y ** 2)));
+                .on("mousemove  touchmove", event => {
+                    if (mode !== MODE.GET(event)) return;
+                    if (event.type === "touchmove") {
+                        event.preventDefault();
+                        onMove(event.touches[0].clientX, event.touches[0].clientY);
+                    }
+                    else
+                        onMove(event.clientX, event.clientY)
                 })
-                .on("mouseleave", event => {
+                .on("mouseleave touchend", event => {
+                    if (mode !== MODE.GET(event)) return;
+                    mode = MODE.NONE;
                     reset();
                 });
-
             reset();
             payload();
         });

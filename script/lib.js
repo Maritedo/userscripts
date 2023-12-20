@@ -210,3 +210,10 @@ function refSize(element, callback = null) {
     resizeObserver.observe(element);
     return { box: res, stop: resizeObserver.disconnect };
 }
+
+const MODE = {
+    TOUCH: 0,
+    MOUSE: 1,
+    NONE: -1,
+    GET: (evt) => evt.type.startsWith("mouse") > -1 ? MODE.MOUSE : MODE.TOUCH
+};

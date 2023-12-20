@@ -1,25 +1,14 @@
 const duration = 1000;
 const vertical = 90;
 const horizon = 180;
-const MODE = {
-    TOUCH: 0,
-    MOUSE: 1,
-    NONE: -1,
-    GET: (evt) => {
-        return evt.type.indexOf("mouse") > -1 ? MODE.MOUSE : MODE.TOUCH;
-    }
-};
 const getCord = (evt, mode) => {
-    if (mode === MODE.TOUCH) {
-        evt = evt.touches[0];
-    }
+    if (mode === MODE.TOUCH) evt = evt.touches[0];
     return { x: evt.clientX, y: evt.clientY };
 }
 
 $(window).on("load", function () {
-    // let lock = true;
     let startX, startY;
-    const main = $(".wrapper");
+    const main = $(".cube-wrapper");
     const cube = main.query(".cube");
     main
         .on("mousedown touchstart", onStart)
