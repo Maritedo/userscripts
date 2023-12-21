@@ -74,7 +74,7 @@
 .cube-wrapper .configure {
     z-index: 2;
     position: absolute;
-    bottom: 10px;
+    bottom: 40px;
     background-color: var(--blur);
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);

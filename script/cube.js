@@ -1,9 +1,30 @@
 const duration = 1000;
-const vertical = 90;
+const vertical = 180;
 const horizon = 180;
 const getCord = (evt, mode) => {
     if (mode === MODE.TOUCH) evt = evt.touches[0];
     return { x: evt.clientX, y: evt.clientY };
+};
+const faceIndex = [
+//.   0  1  2  3  X
+/*0*/[0, 2, 1, 4],
+/*1*/[3, 3, 3, 3],
+/*2*/[1, 4, 0, 2],
+/*3*/[5, 5, 5, 5],
+/*Y*/[],
+];
+const names = {
+    0: "front",
+    1: "back",
+    2: "left",
+    3: "top",
+    4: "right",
+    5: "bottom"
+};
+function getFace(x, y) {
+    // console.log("x轴翻转：", y == 0);
+    // console.log("y轴翻转：", y == 3);
+    return names[faceIndex[y][x]];
 }
 
 $(window).on("load", function () {
@@ -27,7 +48,7 @@ $(window).on("load", function () {
     const ANIME = animater(cube.pure);
     const UpNDown = ANIME
         .property("rotateX", { from: -vertical, to: vertical })
-        .group({ value: 0.375, duration });
+        .group({ circle: true, value: 0.375, duration });
     const LeftNRight = ANIME
         .property("rotateY", { from: -horizon, to: horizon })
         .group({ circle: true, value: 0.625, duration });
@@ -55,9 +76,11 @@ $(window).on("load", function () {
     function onEnd(evt) {
         if (mode !== MODE.GET(evt)) return;
         mode = MODE.NONE;
-        LeftNRight.unstore();
-        UpNDown.unstore();
-        UpNDown.reset();
+        const ptX = (Math.round(4 * getFixed(LeftNRight.get("rotateY") / 360 + 0.5)) % 4) / 4;
+        const ptY = (Math.round(4 * getFixed(UpNDown.get("rotateX") / 360 + 0.5)) % 4) / 4;
+        LeftNRight.unstore().go(ptX);
+        UpNDown.unstore().go(ptY);
+        let face = getFace(4 * ptX, 4 * ptY);
     }
     UpNDown.reset();
     LeftNRight.reset();
