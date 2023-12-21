@@ -45,15 +45,15 @@ $(window).on("load", function () {
             disp.text(Number(value).toFixed(2));
         });
     const ANIME = animater(cube.pure);
-    const UpNDown = ANIME
+    const AxisV = ANIME
         .property("rotateX", { from: -vertical, to: vertical })
         .group({ circle: true, value: 0, duration });
-    const LeftNRight = ANIME
+    const AxisH = ANIME
         .property("rotateY", { from: -horizon, to: horizon })
         .group({ circle: true, value: 0, duration });
     const payload = props => {
-        const x = UpNDown.get("rotateX");
-        const y = LeftNRight.get("rotateY");
+        const x = AxisV.get("rotateX");
+        const y = AxisH.get("rotateY");
         cube.css("--rotate-x", `${x}deg`)
             .css("--rotate-y", `${y}deg`);
     }
@@ -61,8 +61,8 @@ $(window).on("load", function () {
     payload();
     let mode = MODE.NONE;
     function getAxisState(reverseAgain = false) {
-        const ptX = Math.round(4 * getFixed(LeftNRight.get("rotateY") / 360 + 0.5)) % 4;
-        const ptY = Math.round(4 * getFixed(UpNDown.get("rotateX") / 360 + 0.5)) % 4;
+        const ptX = Math.round(4 * getFixed(AxisH.get("rotateY") / 360 + 0.5)) % 4;
+        const ptY = Math.round(4 * getFixed(AxisV.get("rotateX") / 360 + 0.5)) % 4;
         return {
             pt: {
                 x: ptX / 4,
@@ -77,8 +77,8 @@ $(window).on("load", function () {
         else return;
         ({ x: startX, y: startY } = getCord(evt, ctlr.pure, mode));
         state = getAxisState(startY > ctlr.pure.getBoundingClientRect().height / 2);
-        LeftNRight.store();
-        UpNDown.store();
+        AxisH.store();
+        AxisV.store();
     }
     const sensitivity = 300;
     function onMove(evt) {
@@ -86,16 +86,16 @@ $(window).on("load", function () {
         evt.preventDefault();
         const { x, y } = getCord(evt, ctlr.pure, mode);
         if (state.reverseX)
-            LeftNRight.go((startX - x) / sensitivity);
+            AxisH.go((startX - x) / sensitivity);
         else
-            LeftNRight.go((x - startX) / sensitivity);
-        UpNDown.go((startY - y) / sensitivity);
+            AxisH.go((x - startX) / sensitivity);
+        AxisV.go((startY - y) / sensitivity);
     }
     function onEnd(evt) {
         if (mode !== MODE.GET(evt)) return;
         mode = MODE.NONE;
         let _state_ = getAxisState();
-        LeftNRight.unstore().go(_state_.pt.x);
-        UpNDown.unstore().go(_state_.pt.y);
+        AxisH.unstore().go(_state_.pt.x);
+        AxisV.unstore().go(_state_.pt.y);
     }
 });
