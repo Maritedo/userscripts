@@ -47,14 +47,8 @@ $(window)
         _push_(stateId)
     });
 
-const shadowRange = {
-    from: 20,
-    to: -20
-};
-const rotateRange = {
-    from: 8,
-    to: -8
-};
+const shadowRange = 20;
+const rotateRange = 8;
 
 const getDegree = (x, y) => {
     x -= 0.5;
@@ -71,27 +65,21 @@ $(document)
             let mode = MODE.NONE;
             const anim = animater(element.pure)
             const axisX = anim
-                .property("rotateX", rotateRange)
-                .property("shadowX", shadowRange)
-                .group({ value: 0.5 });
+                .property({ value: 0.5 });
             const axisY = anim
-                .property("rotateY", rotateRange)
-                .property("shadowY", shadowRange)
-                .group({ value: 0.5 });
+                .property({ value: 0.5 });
             const degree = anim
-                .property("degree", { from: -180, to: 180 })
-                .group({ circle: true });
+                .property({ circle: true });
             const opacity = anim
-                .property("opacity", { from: 0, to: 0.25 })
-                .group();
+                .property();
 
             const payload = () => {
-                const rx = axisX.get("rotateX");
-                const ry = axisY.get("rotateY");
-                const sx = axisX.get("shadowX");
-                const sy = axisY.get("shadowY");
-                const dg = degree.get("degree");
-                const op = opacity.get("opacity");
+                const rx = axisX.value * 2 * rotateRange - rotateRange;
+                const ry = axisY.value * 2 * rotateRange - rotateRange;
+                const sx = axisX.value * 2 * shadowRange - shadowRange;
+                const sy = axisY.value * 2 * shadowRange - shadowRange;
+                const dg = degree.value * 360 - 180;
+                const op = opacity.value * 0.25;
                 element
                     .style("transform", `rotateX(${-rx}deg) rotateY(${ry}deg)`)
                     .style("boxShadow", `${sx}px ${sy}px 14px -7px rgba(0, 0, 0, 0.6)`)

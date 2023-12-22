@@ -1,6 +1,7 @@
 import "./lib.js";
-import "./animater.js"
+import "./animater2.js"
 
+const DP = 2 * Math.PI;
 const duration = 3000;
 const sensitivity = 400;
 const getCord = (evt, ele, mode) => {
@@ -115,11 +116,9 @@ function getFace(x, y) {
 //     }
 // });
 $(window).on("load", function () {
-    let flag = true;
     let initial = genRotate(0, 0);
     let mode = MODE.NONE;
     let startX, startY;
-    let accumulatedX = 0, accumulatedY = 0;
     const main = $(".cube-wrapper");
     cube = main.query(".cube");
     const ctlr = main.query(".cube-controller");
@@ -150,19 +149,18 @@ $(window).on("load", function () {
         });
     const ANIME = animater(cube.pure);
     const AxisH = ANIME
-        .property("rotate", { from: 0, to: 2 * Math.PI })
-        .group({ circle: true, value: 0, duration });
+        .property({ circle: true, value: 0, duration });
     const AxisV = ANIME
-        .property("rotate", { from: 0, to: 2 * Math.PI })
-        .group({ circle: true, value: 0, duration });
+        .property({ circle: true, value: 0, duration });
     const payload = () => {
-        const h = AxisH.get("rotate");
-        const v = AxisV.get("rotate");
-        setRotation(Multiple(initial, genRotate(h, v)));
+        const h = AxisH.value;
+        const v = AxisV.value;
+        if (h % 1 == 0 || v % 1 == 0) return;
+        setRotation(Multiple(initial, genRotate(h * DP, v * DP)));
     }
     function getAxisState() {
-        const ptH = Math.round(4 * getFixed(AxisH.get("rotate") / 2 / Math.PI)) % 4;
-        const ptV = Math.round(4 * getFixed(AxisV.get("rotate") / 2 / Math.PI)) % 4;
+        const ptH = Math.round(4 * getFixed(AxisH.value)) % 4;
+        const ptV = Math.round(4 * getFixed(AxisV.value)) % 4;
         return {
             h: ptH / 4,
             v: ptV / 4
@@ -174,11 +172,11 @@ $(window).on("load", function () {
 
     function onStart(evt) {
         ({ x: startX, y: startY } = getCord(evt, ctlr.pure, mode));
-        const h = AxisH.get("rotate");
-        const v = AxisV.get("rotate");
-        AxisH.set(0, true).store();
-        AxisV.set(0, true).store();
+        const h = AxisH.value * DP;
+        const v = AxisV.value * DP;
         initial = Multiple(initial, genRotate(h, v));
+        AxisH.set(0).store();
+        AxisV.set(0).store();
     }
     function onMove(evt) {
         const { x, y } = getCord(evt, ctlr.pure, mode);
@@ -186,7 +184,8 @@ $(window).on("load", function () {
         AxisV.go((x - startX) / sensitivity);
     }
     function onEnd(evt) {
-
+        AxisH.unstore();
+        AxisV.unstore();
     }
 });
 

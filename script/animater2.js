@@ -10,27 +10,14 @@ class Animater {
         circle: false,
         value: 0
     };
-    /** @type {{from: number, to: number, value: number}} */
-    static defaultMeta = {
-        from: 0,
-        to: 1,
-        value: null
-    };
-    /** @type {Element} */
-    element;
     /** @type {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number, completed: boolean, checkPoint: number, isContinous: boolean }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }[]} */
     propertyGroups = [];
     /** @type {(()=>any)[]} */
-    startups = [];
-    /** @type {(()=>any)[]} */
     payloads = [];
-    /** @type {(()=>any)[]} */
-    cleanups = [];
     /** @type {boolean} */
     lock = false;
 
-    constructor(element) {
-        this.element = element;
+    constructor() {
     }
 
     stopFlag = false;
@@ -89,16 +76,8 @@ class Animater {
                 const offsetTime = Math.min(1, (tick - states.tick.start) / prop.duration);
                 states.current = states.start + states.pad * prop.timing(offsetTime);
             }
-            for (const values of prop.values.values()) {
-                const { from, to } = values;
-                if (prop.circle)
-                    values.value = from + (to - from) * getFixed(states.current);
-                else
-                    values.value = from + (to - from) * states.current;
-            }
         }
         if (completed) {
-            // this.cleanups.forEach(e => e(this.propertyGroups));
             this.lock = false;
         }
         else {
@@ -110,21 +89,6 @@ class Animater {
     proxy(payload) {
         this.payloads.push(payload);
         return this;
-    }
-
-    onInvoke(callback) {
-        this.startups.push(callback);
-        return this;
-    }
-
-    onEnd(callback) {
-        this.cleanups.push(callback);
-        return this;
-    }
-
-    invoke() {
-        this.startups.forEach(s => s());
-        this.onTick();
     }
 
     unregistryProxy(payload) {
@@ -150,7 +114,7 @@ class Animater {
                     this.lock = true;
                     propGroup.states.tick.last = propGroup.states.tick.start = Date.now();
                     propGroup.states.target = value;
-                    this.invoke();
+                    this.onTick();
                 } else {
                     propGroup.states.newValue = value;
                     propGroup.states.flag = true;
@@ -170,58 +134,33 @@ class Animater {
         const set = (value) => {
             propGroup.states.completed = true;
             propGroup.states.target = propGroup.states.start = propGroup.states.current = value;
-            // if (brk) propGroup.states.breakFlag = true;
             return then;
         }
-        const calc = (name, percent) => {
-            const { from, to } = propGroup.values.get(name);
-            return from + (to - from) * percent;
-        }
-        const getTarget = () => {
-            return propGroup.states.target;
-        }
         const reset = () => go(defaultVal);
-        const get = (keyName) => propGroup.values.get(keyName).value;
-        return (then = { go, set, get, reset, store, unstore, calc, getTarget, meta: propGroup });
+        return (then = { go, set, get value() { return propGroup.states.current }, reset, store, unstore, meta: propGroup });
     }
 
-    property(prop, options) {
-        const props = new Map();
-        const _animater_ = this;
-        const group = (options) => {
-            const { timing, duration, circle, value } = Object.assign({}, Animater.defaultOptions, options);
-            for (const values of props.values()) {
-                const { from, to } = values;
-                values.value = from + (to - from) * value;
-            }
-            const propGroup = {
-                states: {
-                    get pad() { return this.target - this.start },
-                    tick: { last: 0, start: 0 },
-                    flag: false,
-                    start: value,
-                    target: value,
-                    current: value,
-                    newValue: 0,
-                    completed: true,
-                    checkPoint: value,
-                    isContinous: false,
-                    breakFlag: false
-                },
-                values: props,
-                timing,
-                circle,
-                duration
-            };
-            _animater_.propertyGroups.push(propGroup);
-            return _animater_.gen(propGroup, value);
-        }
-        const property = (prop, options) => {
-            const { from, to, value } = Object.assign({}, Animater.defaultMeta, options);
-            props.set(prop, { from, to, value });
-            return { property, group };
-        }
-        return property(prop, options);
+    property(options) {
+        const { timing, duration, circle, value } = Object.assign({}, Animater.defaultOptions, options);
+        const propGroup = {
+            states: {
+                get pad() { return this.target - this.start },
+                tick: { last: 0, start: 0 },
+                flag: false,
+                start: value,
+                target: value,
+                current: value,
+                newValue: 0,
+                completed: true,
+                checkPoint: value,
+                isContinous: false
+            },
+            timing,
+            circle,
+            duration
+        };
+        this.propertyGroups.push(propGroup);
+        return this.gen(propGroup, value);
     }
 
     static easeOutQuint(x) {
