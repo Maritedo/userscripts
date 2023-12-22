@@ -21,7 +21,11 @@ class Animater {
     /** @type {{ states: { tick: { last: number, start: number }, pad: number, flag: boolean, start: number, target: number, current: number, newValue: number, completed: boolean, checkPoint: number, isContinous: boolean }, values: Map<string, { from: number, to: number, value: number }> , timing: (e: number) => number, duration: number, circle: boolean }[]} */
     propertyGroups = [];
     /** @type {(()=>any)[]} */
+    startups = [];
+    /** @type {(()=>any)[]} */
     payloads = [];
+    /** @type {(()=>any)[]} */
+    cleanups = [];
     /** @type {boolean} */
     lock = false;
 
@@ -29,17 +33,32 @@ class Animater {
         this.element = element;
     }
 
+    stopFlag = false;
+
+    stop() {
+        if (this.lock)
+            this.stopFlag = true;
+    }
+
     onTick() {
+        if (this.stopFlag) {
+            return (this.stopFlag = false, this.lock = false);
+        }
         let completed = true;
         for (const prop of this.propertyGroups) {
             const states = prop.states;
+            if (states.breakFlag) {
+                states.breakFlag = false;
+                continue;
+            }
             // 异步接收到新数据
             if (states.flag) {
                 states.flag = false;
                 states.tick.start = states.tick.last;
                 if (!prop.circle) {
                     states.target = keepInside(0, states.newValue, 1);
-                } else if (!prop.states.isContinous) {
+                }
+                else if (!prop.states.isContinous) {
                     states.current = getFixed(states.current);
                     const target = getFixed(states.newValue);
                     const distance = Math.abs(states.current - target);
@@ -47,7 +66,8 @@ class Animater {
                         states.target = (target > states.current) ? (target - 1) : (target + 1);
                     else
                         states.target = target;
-                } else {
+                }
+                else {
                     states.target = states.newValue;
                 }
                 states.start = states.current;
@@ -81,7 +101,10 @@ class Animater {
                     values.value = from + (to - from) * states.current;
             }
         }
-        if (completed) this.lock = false;
+        if (completed) {
+            this.cleanups.forEach(e => e(this.propertyGroups));
+            this.lock = false;
+        }
         else {
             this.payloads.forEach(e => e(this.propertyGroups));
             requestAnimationFrame(() => this.onTick());
@@ -91,6 +114,21 @@ class Animater {
     proxy(payload) {
         this.payloads.push(payload);
         return this;
+    }
+
+    onInvoke(callback) {
+        this.startups.push(callback);
+        return this;
+    }
+
+    onEnd(callback) {
+        this.cleanups.push(callback);
+        return this;
+    }
+
+    invoke() {
+        this.startups.forEach(s => s());
+        this.onTick();
     }
 
     unregistryProxy(payload) {
@@ -116,7 +154,7 @@ class Animater {
                     this.lock = true;
                     propGroup.states.tick.last = propGroup.states.tick.start = Date.now();
                     propGroup.states.target = value;
-                    this.onTick();
+                    this.invoke();
                 } else {
                     propGroup.states.newValue = value;
                     propGroup.states.flag = true;
@@ -133,13 +171,22 @@ class Animater {
             propGroup.states.isContinous = false;
             return then;
         }
-        const set = (value) => {
+        const set = (value, brk = false) => {
             propGroup.states.completed = true;
             propGroup.states.target = propGroup.states.start = propGroup.states.current = value;
+            if (brk) propGroup.states.breakFlag = true;
+            return then;
+        }
+        const calc = (name, percent) => {
+            const { from, to } = propGroup.values.get(name);
+            return from + (to - from) * percent;
+        }
+        const getTarget = () => {
+            return propGroup.states.target;
         }
         const reset = () => go(defaultVal);
         const get = (keyName) => propGroup.values.get(keyName).value;
-        return (then = { go, set, get, reset, store, unstore });
+        return (then = { go, set, get, reset, store, unstore, calc, getTarget, meta: propGroup });
     }
 
     property(prop, options) {
@@ -162,7 +209,8 @@ class Animater {
                     newValue: 0,
                     completed: true,
                     checkPoint: value,
-                    isContinous: false
+                    isContinous: false,
+                    breakFlag: false
                 },
                 values: props,
                 timing,
@@ -186,6 +234,12 @@ class Animater {
 
     static easeInOutCubic(x) {
         return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    }
+
+    static CODE = {
+        START: 1,
+        GOING: 2,
+        FINAL: 3,
     }
 }
 

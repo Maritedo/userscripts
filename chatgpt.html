@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotating Cube with Z-Buffering (Optimized)</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="cubeCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById("cubeCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // 初始立方体的顶点坐标
+        const baseVertices = [
+            {x: -50, y: -50, z: -50},
+            {x: 50, y: -50, z: -50},
+            {x: 50, y: 50, z: -50},
+            {x: -50, y: 50, z: -50},
+            {x: -50, y: -50, z: 50},
+            {x: 50, y: -50, z: 50},
+            {x: 50, y: 50, z: 50},
+            {x: -50, y: 50, z: 50}
+        ];
+
+        // 连接立方体的边
+        const edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+            [4, 5], [5, 6], [6, 7], [7, 4],
+            [0, 4], [1, 5], [2, 6], [3, 7]
+        ];
+
+        // 面的顶点索引和颜色
+        const faces = [
+            {vertices: [0, 1, 2, 3], color: "#ff0000"}, // 前面
+            {vertices: [4, 5, 6, 7], color: "#00ff00"}, // 后面
+            {vertices: [0, 4, 5, 1], color: "#0000ff"}, // 左面
+            {vertices: [2, 6, 7, 3], color: "#ffff00"}, // 右面
+            {vertices: [0, 3, 7, 4], color: "#ff00ff"}, // 顶面
+            {vertices: [1, 2, 6, 5], color: "#00ffff"}  // 底面
+        ];
+
+        // 初始化立方体的角度
+        let angleX = 0;
+        let angleY = 0;
+
+        // 鼠标拖动相关变量
+        let isDragging = false;
+        let startMouseX, startMouseY;
+        let startAngleX, startAngleY;
+
+        // 保存当前旋转的四元数
+        let rotationQuat = {x: 0, y: 0, z: 0, w: 1};
+
+        // 上一次的最终旋转四元数
+        let lastRotationQuat = {x: 0, y: 0, z: 0, w: 1};
+
+        // 鼠标拖动的缩放因子
+        const sensitivity = 0.0001;
+
+        // 保存旋转后的顶点坐标
+        const rotatedVertices = baseVertices.map(point => ({x: point.x, y: point.y, z: point.z}));
+
+        // 监听鼠标按下事件
+        canvas.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            startMouseX = e.clientX;
+            startMouseY = e.clientY;
+            startAngleX = angleX;
+            startAngleY = angleY;
+            rotationQuat = lastRotationQuat; // 使用上一次的最终四元数初始化
+        });
+
+        // 监听鼠标移动事件
+        canvas.addEventListener("mousemove", (e) => {
+            if (isDragging) {
+                const deltaX = (e.clientX - startMouseX) * sensitivity;
+                const deltaY = (e.clientY - startMouseY) * sensitivity;
+
+                // 计算旋转轴
+                const rotationAxis = normalize({x: deltaY, y: deltaX, z: 0});
+
+                // 计算旋转角度
+                const rotationAngle = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+
+                // 将旋转转换为四元数
+                const deltaQuat = axisAngleToQuaternion(rotationAxis, rotationAngle);
+
+                // 将当前旋转与新的旋转叠加
+                rotationQuat = multiplyQuaternions(deltaQuat, rotationQuat);
+
+                // 归一化四元数，确保其长度接近1
+                const length = Math.sqrt(rotationQuat.x ** 2 + rotationQuat.y ** 2 + rotationQuat.z ** 2 + rotationQuat.w ** 2);
+                rotationQuat = {x: rotationQuat.x / length, y: rotationQuat.y / length, z: rotationQuat.z / length, w: rotationQuat.w / length};
+
+                // 将四元数转换为旋转后的欧拉角
+                const {x: newAngleX, y: newAngleY} = quaternionToEulerAngles(rotationQuat);
+
+                // 在计算旋转的同时保存旋转后的顶点坐标
+                baseVertices.forEach((point, index) => {
+                    const rotatedPoint = rotatePoint(point, newAngleX, newAngleY);
+                    rotatedVertices[index].x = rotatedPoint.x;
+                    rotatedVertices[index].y = rotatedPoint.y;
+                    rotatedVertices[index].z = rotatedPoint.z;
+                });
+
+                drawCube();
+            }
+        });
+
+        // 监听鼠标释放事件
+        canvas.addEventListener("mouseup", () => {
+            isDragging = false;
+            lastRotationQuat = rotationQuat; // 保存当前的最终四元数
+        });
+
+        function drawCube() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 将坐标系移到画布中心
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+
+            // 计算每个面的中心点
+            const faceCenters = faces.map(face => {
+                const {vertices} = face;
+                const center = {x: 0, y: 0, z: 0};
+
+                vertices.forEach(vertexIndex => {
+                    const vertex = rotatedVertices[vertexIndex];
+                    center.x += vertex.x;
+                    center.y += vertex.y;
+                    center.z += vertex.z;
+                });
+
+                center.x /= vertices.length;
+                center.y /= vertices.length;
+                center.z /= vertices.length;
+
+                return center;
+            });
+
+            // 根据中心点到观察者的距离排序面
+            const observerPosition = {x: 0, y: 0, z: -500}; // 观察者位置
+            const sortedFaces = faces.slice().sort((a, b) => {
+                const centerA = faceCenters[faces.indexOf(a)];
+                const centerB = faceCenters[faces.indexOf(b)];
+
+                const distanceA = distanceToObserver(centerA, observerPosition);
+                const distanceB = distanceToObserver(centerB, observerPosition);
+
+                return distanceB - distanceA;
+            });
+
+            // 只绘制最靠近观察者的三个面
+            for (let i = 0; i < Math.max(sortedFaces.length, 3); i++) {
+                const face = sortedFaces[i];
+                const {vertices, color} = face;
+
+                ctx.beginPath();
+
+                // 设置面的颜色
+                ctx.strokeStyle = color;
+                ctx.fillStyle = color;
+
+                vertices.forEach((pointIndex, index) => {
+                    const startPoint = rotatedVertices[pointIndex];
+                    const perspectiveStart = applyPerspective(startPoint);
+
+                    if (index === 0) {
+                        ctx.moveTo(perspectiveStart.x, perspectiveStart.y);
+                    } else {
+                        ctx.lineTo(perspectiveStart.x, perspectiveStart.y);
+                    }
+                });
+
+                ctx.closePath();
+                ctx.stroke();
+                ctx.fill();
+            }
+
+            // 重置坐标系
+            ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        }
+
+
+        function rotatePoint(point, angleX, angleY) {
+            const cosX = Math.cos(angleX);
+            const sinX = Math.sin(angleX);
+            const cosY = Math.cos(angleY);
+            const sinY = Math.sin(angleY);
+
+            // 绕X轴旋转
+            const y1 = point.y * cosX - point.z * sinX;
+            const z1 = point.y * sinX + point.z * cosX;
+
+            // 绕Y轴旋转
+            const x2 = point.x * cosY + z1 * sinY;
+            const z2 = -point.x * sinY + z1 * cosY;
+
+            return {x: x2, y: y1, z: z2};
+        }
+
+        function applyPerspective(point) {
+            const d = 200;
+            const scaleFactor = d / (d + point.z);
+
+            return {
+                x: point.x * scaleFactor,
+                y: point.y * scaleFactor
+            };
+        }
+
+        function distanceToObserver(point, observer) {
+            const dx = point.x - observer.x;
+            const dy = point.y - observer.y;
+            const dz = point.z - observer.z;
+
+            return Math.sqrt(dx ** 2 + dy ** 2 + dz ** 2);
+        }
+
+        // 将旋转轴归一化
+        function normalize(vector) {
+            const length = Math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2);
+            return {x: vector.x / length, y: vector.y / length, z: vector.z / length};
+        }
+
+        // 将旋转轴和角度转换为四元数
+        function axisAngleToQuaternion(axis, angle) {
+            const sinHalfAngle = Math.sin(angle / 2);
+            const cosHalfAngle = Math.cos(angle / 2);
+
+            return {
+                x: axis.x * sinHalfAngle,
+                y: axis.y * sinHalfAngle,
+                z: axis.z * sinHalfAngle,
+                w: cosHalfAngle
+            };
+        }
+
+        // 将两个四元数相乘
+        function multiplyQuaternions(q1, q2) {
+            const x = q1.x * q2.w + q1.y * q2.z - q1.z * q2.y + q1.w * q2.x;
+            const y = -q1.x * q2.z + q1.y * q2.w + q1.z * q2.x + q1.w * q2.y;
+            const z = q1.x * q2.y - q1.y * q2.x + q1.z * q2.w + q1.w * q2.z;
+            const w = -q1.x * q2.x - q1.y * q2.y - q1.z * q2.z + q1.w * q2.w;
+
+            return {x, y, z, w};
+        }
+
+        // 将四元数转换为欧拉角
+        function quaternionToEulerAngles(q) {
+            const sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+            const cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+            const roll = Math.atan2(sinr_cosp, cosr_cosp);
+
+            const sinp = 2 * (q.w * q.y - q.z * q.x);
+            const pitch = Math.abs(sinp) >= 1 ? Math.sign(sinp) * Math.PI / 2 : Math.asin(sinp);
+
+            const siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+            const cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+            const yaw = Math.atan2(siny_cosp, cosy_cosp);
+
+            return {x: roll, y: pitch, z: yaw};
+        }
+
+        // 初始绘制
+        drawCube();
+
+    </script>
+</body>
+
+</html>
